@@ -19,3 +19,7 @@ PyRedisAdmin 是一个方便查看和管理Redis数据的web界面工具，使�
 1. 完善数据编辑和数据导入导出功能
 2. 加入redis数据分库的管理
 3. 加入redis账号验证功能
+
+![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/info.jpg)
+
+![data](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/data.jpg)
