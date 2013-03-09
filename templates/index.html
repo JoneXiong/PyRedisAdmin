@@ -35,7 +35,11 @@
 <div id="frame">
 <iframe src="/overview" id="iframe" frameborder="0" scrolling="0"></iframe>
 </div><!-- #frame -->
-
+<script>
+	if (document.location.href.indexOf("/?")!=-1 && document.location.href.indexOf("/?s")==-1){
+		var href = document.location.href.replace(/\/\?([a-z]*)\&/, '/$1?');
+		$('#iframe').attr('src', href);
+	}
+</script>
 </div><!-- #sidebar -->
-
  %include footer.html
