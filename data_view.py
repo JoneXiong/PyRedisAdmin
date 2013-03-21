@@ -67,6 +67,8 @@ def hash_html(fullkey,sid, client):
     m_values = client.hgetall(fullkey)
     alt = False
     for key,value in m_values.items():
+        if len(value)>200:
+            value = 'data(len:%s)'%len(value)
         alt_str = alt and 'class="alt"' or ''
         out +='''<tr %(alt_str)s><td><div>%(key)s</div></td><td><div>%(value)s</div></td><td><div>
           <a href="/edit?s=%(sid)s&amp;type=hash&amp;key=%(fullkey)s&amp;hkey=%(key)s"><img src="/media/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>

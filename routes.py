@@ -36,7 +36,7 @@ def view():
     except:
         sid = 0
     fullkey = request.GET.get('key', '')
-
+    refmodel = request.GET.get('refmodel',None)
     server = base['servers'][sid]
     cl = get_client()#get_client(host=server['host'], port=server['port'])
     if cl.exists(fullkey):
@@ -44,7 +44,10 @@ def view():
         general_html = general_html(fullkey, sid, cl)
         out_html = title_html + general_html
         #return template('view',template_adapter=Jinja2Template, out_html=out_html )
-        return template('view', out_html=out_html )
+        if refmodel:
+            return out_html
+        else:
+            return template('view', out_html=out_html )
     else:
         return '  This key does not exist.'
     

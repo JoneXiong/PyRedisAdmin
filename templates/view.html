@@ -19,7 +19,25 @@
 <script src="/media/js/frame.js?v1"></script>
 </head>
 <body>
+	<button id="moniter">开启监视</button>
+	<script>
+		var timer;
+		$("#moniter").toggle(
+		  function () {
+		  	$(this).text("关闭监视");
+		    timer = setInterval(function () { 
+				 $("#out_html").load(window.location.href+"&refmodel=on");
+			}, 1500); 
+			
+		  },
+		  function () {
+		    $(this).text("开启监视");
+			clearInterval(timer);
+		  }
+		); 
+	</script>
+<div id = "out_html">
 {{! out_html }}
-
+</div>
 </body>
 </html>
