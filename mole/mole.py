@@ -244,6 +244,7 @@ class Mole(object):
         except HTTPResponse, e:
             return e
         except Exception, e:
+            import traceback;traceback.print_exc()
             if isinstance(e, (KeyboardInterrupt, SystemExit, MemoryError))\
             or not self.catchall:
                 raise

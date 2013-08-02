@@ -255,6 +255,15 @@ class Request(threading.local, DictMixin):
         for key, value in self.forms.iterallitems():
             params[key] = value
         return params
+    
+    @DictProperty('environ', 'mole.req', read_only=True)
+    def REQUEST(self):
+        """ A combined :class:`MultiDict` with values from :attr:`forms` and
+            :attr:`GET`. File-uploads are not included. """
+        req = MultiDict(self.GET)
+        for key, value in self.forms.iterallitems():
+            req[key] = value
+        return req
 
     @DictProperty('environ', 'mole.body', read_only=True)
     def _body(self):

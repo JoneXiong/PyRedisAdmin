@@ -73,6 +73,7 @@ class Router(object):
                 self.rules.remove(rule)
 
     def build(self, _name, *anon, **args):
+        from urllib import urlencode
         print '*anon, **args',anon,args
         ''' Return a string that matches a named route. Use keyword arguments
             to fill out named wildcards. Remaining arguments are appended as a
@@ -99,7 +100,7 @@ class Router(object):
         except KeyError, e:
             raise RouteBuildError(*e.args)
         
-        if args: url += ['?', urlencode(args.iteritems())]
+        if args: url += ['?', urlencode(args)]
         print 'build url_list...',url
         return ''.join(url)
 
@@ -107,7 +108,7 @@ class Router(object):
         ''' Return a (target, url_agrs) tuple or raise HTTPError(404/405). '''
         targets, urlargs = self._match_path(environ)
         if not targets:
-            raise HTTPError(404, "Not found: " + environ['PATH_INFO'])
+            raise HTTPError(404, "Not found: " + environ.get('PATH_INFO',''))
         environ['router.url_args'] = urlargs
         method = environ['REQUEST_METHOD'].upper()
         if method in targets:

@@ -1,0 +1,29 @@
+<html>
+<head>
+	<title>主页</title>
+	<meta name="decorator" content="default"/>
+ %include site_media.html media_prefix=media_prefix
+</head>
+<body>
+	<div id="content" class="row-fluid">
+		<div id="left" >
+			<iframe id="server_view" name="server_view" src="/server_view" style="overflow:visible;"
+				scrolling="yes" frameborder="no" width="100%"></iframe>
+		</div>
+		<div id="openClose" class="close">&nbsp;</div>
+		<div id="right">
+			<iframe id="db_view" name="db_view" src="/overview" style="overflow:visible;"
+				scrolling="yes" frameborder="no" width="100%"></iframe>
+		</div>
+	</div>
+	<script type="text/javascript"> 
+		var leftWidth = "160"; // 左侧窗口大小
+		function wSize(){
+			var strs=getWindowSize().toString().split(",");
+			$("#server_view, #db_view, #openClose").height(strs[0]-5);
+			$("#right").width($("body").width()-$("#left").width()-$("#openClose").width()-5);
+		}
+	</script>
+	<script src="/{{media_prefix}}/common/wsize.min.js" type="text/javascript"></script>
+</body>
+</html>

@@ -30,7 +30,6 @@ class BjoernServer(ServerAdapter):
         run(handler, self.host, self.port)
 
 class UVWebServer(ServerAdapter):
-    """ Screamingly fast server written in C: https://github.com/jonashaag/bjoern """
     def run(self, handler):
         from uvweb import run
         run(handler, self.host, self.port)
@@ -52,6 +51,7 @@ class FlupFCGIServer(ServerAdapter):
 
 class WSGIRefServer(ServerAdapter):
     def run(self, handler): # pragma: no cover
+        __import__('BaseHTTPServer').BaseHTTPRequestHandler.address_string = lambda x:x.client_address[0]
         from wsgiref.simple_server import make_server, WSGIRequestHandler
         if self.quiet:
             class QuietHandler(WSGIRequestHandler):

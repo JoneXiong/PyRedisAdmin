@@ -1,14 +1,19 @@
 base = {
     'servers':[
               {'index':0,
-               'name': 'local server', 
+               'name': 'server1', 
               'host': '127.0.0.1',
-              'port': 6379},
+              'port': 6379,
+              'databases':16
+              },
               {'index':1,
-               'name': '10.98', 
-              'host': '192.168.10.98',
-              'port': 6379},
+               'name': 'server2', 
+              'host': '127.0.0.1',
+              'port': 6379,
+              'databases':16
+              },
           ],
     'seperator' : ':',
     'maxkeylen' : 100
 }
+media_prefix = "pyred_media"

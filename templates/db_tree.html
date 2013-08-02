@@ -1,0 +1,127 @@
+<html>
+<head>
+	<title>Keys list</title>
+	<meta name="decorator" content="default"/>
+	
+ %include site_media.html media_prefix=media_prefix
+	
+<link href="/{{media_prefix}}/jquery-ztree/3.5.12/css/zTreeStyle/zTreeStyle.min.css" rel="stylesheet" type="text/css"/>
+<script src="/{{media_prefix}}/jquery-ztree/3.5.12/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+	<style type="text/css">
+		.ztree {margin-top:5px;*margin:-5px 0 5px -2px;_position:relative;_margin:0;_top:-10px;overflow:hidden;}
+		.ztree li span.button.level0, .ztree li a.level0 {display:none;height:0;}
+		.ztree li ul.level0 {padding:0;background:none;}
+	</style>
+	<script type="text/javascript">
+		var tree = null;
+		var key, lastValue = "", nodeList = [];
+		function do_Expand(){
+			if (tree){
+				tree.expandAll(true);
+			}
+		}
+		function do_Collapse(){
+			if (tree){
+				var nodes = tree.getNodesByParam("level", 1);
+				for(var i=0; i<nodes.length; i++) {
+					tree.expandNode(nodes[i], false, true, false);
+				}
+			}
+		}
+		function do_Search(){
+			var value = $.trim(key.get(0).value);
+			urlpara = "?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&k="+ value;
+			window.location.href = urlpara;
+		}
+		
+		function onClick(event, treeId, treeNode, clickFlag) {
+			if (!treeNode.isParent){
+				parent.document.getElementById("cmsMainFrame").src="/view?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&key="+treeNode.id;
+			}
+		}
+	
+		$(document).ready(function(){
+		var setting = {
+				view:{
+					selectedMulti:false,
+					nameIsHTML: true,
+					fontCss:function(treeId, treeNode) {
+						return (!!treeNode.highlight) ? {"font-weight":"bold"} : {"font-weight":"normal"};
+					}
+				},
+				data: {
+					key: {
+						title:"count"
+					},
+					simpleData: {
+						enable: true
+					}
+				},
+				callback: {
+					onClick: onClick
+				}
+			};
+			var zNodes= {{!all_trees}};
+			tree = $.fn.zTree.init($("#tree"), setting, zNodes);
+			
+			key = $("#key");
+//			key.bind("cut input", searchNode);
+//			// 展开第一级节点
+//			var nodes = tree.getNodesByParam("level", 0);
+//			for(var i=0; i<nodes.length; i++) {
+//				tree.expandNode(nodes[i], true, true, false);
+//			}
+//			// 展开第二级节点
+//			nodes = tree.getNodesByParam("level", 1);
+//			for(var i=0; i<nodes.length; i++) {
+//				tree.expandNode(nodes[i], true, true, false);
+//			};
+		});
+		
+		function searchNode(e) {
+			// 取得输入的关键字的值
+			var value = $.trim(key.get(0).value);
+			// 如果和上次一次，就退出不查了。
+			if (lastValue === value) {
+				return;
+			}
+			// 保存最后一次
+			lastValue = value;
+			// 如果要查空字串，就退出不查了。
+			if (value === "") {
+				return;
+			}
+			updateNodes(false);
+			nodeList = tree.getNodesByParamFuzzy("name", value);
+			updateNodes(true);
+		}
+		function updateNodes(highlight) {
+			for(var i=0, l=nodeList.length; i<l; i++) {
+				nodeList[i].highlight = highlight;				
+				tree.updateNode(nodeList[i]);
+				if (highlight) {
+					tree.expandNode(nodeList[i].getParentNode(), true, false, true);
+				}
+			}
+			$("#key").focus();
+		}
+	</script>
+</head>
+<body>
+	<div class="accordion-group" style="padding-left:10px">
+	    <div class="accordion-heading">
+	         <div id="search" class="control-group">
+				<span><input type="text" class="empty" id="key" name="key" maxlength="50" style="width:100px;"></span>
+				<input id="btnSubmit" class="btn" type="submit" value="Search" onclick="do_Search();">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		    	<input id="btnSubmit" class="btn" type="submit" value="Expand" onclick="do_Expand();">
+				<input id="btnSubmit" class="btn" type="submit" value="Collapse" onclick="do_Collapse();">
+		     </div>
+	    </div>
+	    <div class="accordion-body">
+			<div class="accordion-inner">
+				<div id="tree" class="ztree"></div>
+			</div>
+	    </div>
+	</div>
+</body>
+</html>

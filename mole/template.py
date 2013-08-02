@@ -135,6 +135,8 @@ class Jinja2Template(BaseTemplate):
             raise RuntimeError('The keyword argument `prefix` has been removed. '
                 'Use the full jinja2 environment name line_statement_prefix instead.')
         self.env = Environment(loader=FunctionLoader(self.loader), **kwargs)
+        from mole import url
+        self.env.globals['url_for'] = url 
         if filters: self.env.filters.update(filters)
         if tests: self.env.tests.update(tests)
         if self.source:
