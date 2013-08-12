@@ -68,7 +68,7 @@ def get_redis_info():
                                 'keys': info_dict['db0']['keys'],
                                 'used_memory': info_dict['used_memory']/1024,
                                 'uptime_in_seconds': info_dict['uptime_in_seconds'],
-                                'last_save_time': strftime("%Y-%m-%d %H:%M:%S",localtime(int(info_dict['last_save_time']))),
+                                'last_save_time': strftime("%Y-%m-%d %H:%M:%S",localtime( int(  info_dict.has_key('rdb_last_save_time') and info_dict["rdb_last_save_time"] or info_dict.get('last_save_time', '0')  ) )),
                                 's_index':ct,
                                 'media_prefix':media_prefix
                                 })
