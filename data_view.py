@@ -5,16 +5,16 @@
 
 from config import  media_prefix
 
-def title_html(fullkey,sid):
+def title_html(fullkey,sid, db):
     out = '''
     <h2>%(fullkey)s
           <a href="/rename?s=%(sid)s&amp;key=%(fullkey)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Rename" alt="[R]"></a>
-          <a href="/delete?s=%(sid)s&amp;key=%(fullkey)s" class="delkey"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;key=%(fullkey)s" class="delkey"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
           <a href="/export?s=%(sid)s&amp;key=%(fullkey)s"><img src="/%(media_prefix)s/images/export.png" width="16" height="16" title="Export" alt="[E]"></a>
-    </h2>'''%({'sid':sid, 'fullkey':fullkey,'media_prefix':media_prefix})
+    </h2>'''%({'sid':sid, 'db':db, 'fullkey':fullkey,'media_prefix':media_prefix})
     return out
 
-def general_html(fullkey, sid, client):
+def general_html(fullkey, sid, db, client):
     cl = client
     m_type = cl.type(fullkey)
     m_ttl = cl.ttl(fullkey)
@@ -28,20 +28,20 @@ def general_html(fullkey, sid, client):
     if m_type=='string':
         val = cl.get(fullkey)
         m_len = len(val)
-        m_detail = string_html(fullkey, sid, client)
+        m_detail = string_html(fullkey, sid, db, client)
         m_other = ''
     if m_type=='hash':
         m_len = cl.hlen(fullkey)
-        m_detail = hash_html(fullkey, sid, client)
+        m_detail = hash_html(fullkey, sid, db, client)
     elif m_type=='list':
         m_len = cl.llen(fullkey)
-        m_detail = list_html(fullkey, sid, client)
+        m_detail = list_html(fullkey, sid, db, client)
     elif m_type=='set':
         m_len = len(cl.smembers(fullkey))
-        m_detail = set_html(fullkey, sid, client)
+        m_detail = set_html(fullkey, sid, db, client)
     elif m_type=='zset':
         m_len = len(cl.zrange(fullkey,0,-1))
-        m_detail = zset_html(fullkey, sid, client)
+        m_detail = zset_html(fullkey, sid, db, client)
     
     out = '''
     <table>
@@ -52,20 +52,20 @@ def general_html(fullkey, sid, client):
     </table>'''%({'type': m_type, 'ttl':m_ttl,  'sid':sid, 'fullkey':fullkey, 'encoding':m_encoding, 'size': m_len, 'media_prefix':media_prefix})
     return out + m_detail + m_other
 
-def string_html(fullkey,sid, client):
+def string_html(fullkey,sid, db, client):
     m_value = client.get(fullkey)
     out = '''
     <table>
         <tr><td><div>%(value)s</div></td><td><div>
-          <a href="/edit?s=%(sid)s&amp;type=string&amp;key=%(fullkey)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
+          <a href="/edit?s=%(sid)s&db=%(db)s&amp;type=string&amp;key=%(fullkey)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
         </div></td><td><div>
-          <a href="/delete?s=%(sid)s&amp;type=string&amp;key=%(fullkey)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=string&amp;key=%(fullkey)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
     </table>
-    '''%({'value':m_value, 'sid':sid, 'fullkey':fullkey, 'media_prefix':media_prefix})
+    '''%({'value':m_value, 'sid':sid, 'db':db, 'fullkey':fullkey, 'media_prefix':media_prefix})
     return out
 
-def hash_html(fullkey,sid, client):
+def hash_html(fullkey,sid, db, client):
     out = '''
     <table>
     <tr><th><div>Key</div></th><th><div>Value</div></th><th><div>&nbsp;</div></th><th><div>&nbsp;</div></th></tr>'''
@@ -76,16 +76,16 @@ def hash_html(fullkey,sid, client):
             value = 'data(len:%s)'%len(value)
         alt_str = alt and 'class="alt"' or ''
         out +='''<tr %(alt_str)s><td><div>%(key)s</div></td><td><div>%(value)s</div></td><td><div>
-          <a href="/edit?s=%(sid)s&amp;type=hash&amp;key=%(fullkey)s&amp;hkey=%(key)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
+          <a href="/edit?s=%(sid)s&db=%(db)s&amp;type=hash&amp;key=%(fullkey)s&amp;value=%(key)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
         </div></td><td><div>
-          <a href="/delete?s=%(sid)s&amp;type=hash&amp;key=%(fullkey)s&amp;hkey=%(key)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=hash&amp;key=%(fullkey)s&amp;value=%(key)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
-        '''%({'value':value, 'key':key, 'sid':sid, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
+        '''%({'value':value, 'key':key, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
         alt = not alt
     out +='</table>'
     return out
 
-def list_html(fullkey,sid, client):
+def list_html(fullkey,sid, db, client):
     out = '''
     <table>
     <tr><th><div>Index</div></th><th><div>Value</div></th><th><div>&nbsp;</div></th><th><div>&nbsp;</div></th></tr>'''
@@ -95,17 +95,17 @@ def list_html(fullkey,sid, client):
     for value in m_values:
         alt_str = alt and 'class="alt"' or ''
         out +='''<tr %(alt_str)s><td><div>%(index)s</div></td><td><div>%(value)s</div></td><td><div>
-          <a href="/edit?s=%(sid)s&amp;type=list&amp;key=%(fullkey)s&amp;index=%(index)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
+          <a href="/edit?s=%(sid)s&db=%(db)s&amp;type=list&amp;key=%(fullkey)s&amp;value=%(index)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
         </div></td><td><div>
-          <a href="/delete?s=%(sid)s&amp;type=list&amp;key=%(fullkey)s&amp;index=%(index)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=list&amp;key=%(fullkey)s&amp;value=%(index)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
-        '''%({'value':value, 'index':index, 'sid':sid, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
+        '''%({'value':value, 'index':index, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
         alt = not alt
         index +=1
     out +='</table>'
     return out
 
-def set_html(fullkey,sid, client):
+def set_html(fullkey,sid, db, client):
     out = '''
     <table>
     <tr><th><div>Value</div></th><th><div>&nbsp;</div></th><th><div>&nbsp;</div></th></tr>'''
@@ -114,16 +114,16 @@ def set_html(fullkey,sid, client):
     for value in m_values:
         alt_str = alt and 'class="alt"' or ''
         out +='''<tr %(alt_str)s><td><div>%(value)s</div></td><td><div>
-          <a href="/edit?s=%(sid)s&amp;type=set&amp;key=%(fullkey)s&amp;value=%(value)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
+          <a href="/edit?s=%(sid)s&db=%(db)s&amp;type=set&amp;key=%(fullkey)s&amp;value=%(value)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
         </div></td><td><div>
-          <a href="/delete?s=%(sid)s&amp;type=set&amp;key=%(fullkey)s&amp;value=%(value)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=set&amp;key=%(fullkey)s&amp;value=%(value)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
-        '''%({'value':value, 'sid':sid, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
+        '''%({'value':value, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
         alt = not alt
     out +='</table>'
     return out
 
-def zset_html(fullkey,sid, client):
+def zset_html(fullkey,sid, db, client):
     out = '''
     <table>
     <tr><th><div>Score</div></th><th><div>Value</div></th><th><div>&nbsp;</div></th><th><div>&nbsp;</div></th></tr>'''
@@ -133,11 +133,11 @@ def zset_html(fullkey,sid, client):
         score = client.zscore(fullkey,value)
         alt_str = alt and 'class="alt"' or ''
         out +='''<tr %(alt_str)s><td><div>%(score)s</div></td><td><div>%(value)s</div></td><td><div>
-          <a href="/edit?s=%(sid)s&amp;type=zset&amp;key=%(fullkey)s&amp;score=%(score)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
+          <a href="/edit?s=%(sid)s&db=%(db)s&amp;type=zset&amp;key=%(fullkey)s&amp;score=%(score)s"><img src="/%(media_prefix)s/images/edit.png" width="16" height="16" title="Edit" alt="[E]"></a>
         </div></td><td><div>
-          <a href="/delete?s=%(sid)s&amp;type=zset&amp;key=%(fullkey)s&amp;value=%(value)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
+          <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=zset&amp;key=%(fullkey)s&amp;value=%(value)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
-        '''%({'value':value, 'score':score, 'sid':sid, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
+        '''%({'value':value, 'score':score, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
         alt = not alt
     out +='</table>'
     return out

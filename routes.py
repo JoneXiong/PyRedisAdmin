@@ -70,8 +70,8 @@ def view():
     server = base['servers'][cur_server_index]
     cl = get_client(host=server['host'], port=server['port'],db=cur_db_index)
     if cl.exists(fullkey):
-        title_html = title_html(fullkey, cur_server_index)
-        general_html = general_html(fullkey, cur_server_index, cl)
+        title_html = title_html(fullkey, cur_server_index, cur_db_index)
+        general_html = general_html(fullkey, cur_server_index, cur_db_index, cl)
         out_html = title_html + general_html
         if refmodel:
             return out_html
@@ -86,7 +86,25 @@ def edit():
 
 @route('/delete')
 def delete():
-    return 'Still in developme. You can see it in next version.'
+    from config import base
+    from redis_api import get_client
+    from data_change import delete_key, delete_value
+    try:
+        cur_server_index = int(request.GET.get('s', '0'))
+        cur_db_index = int(request.GET.get('db', '0'))
+    except:
+        cur_server_index = 0
+        cur_db_index = 0
+    key = request.GET.get('key', None)
+    value = request.GET.get('value', None)
+    type = request.GET.get('type', None)
+    server = base['servers'][cur_server_index]
+    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index)
+    if value:
+        delete_value(key,value,type,cl)
+    else:
+        delete_key(key,cl)
+    return 'ok'
 
 @route('/ttl')
 def ttl():
