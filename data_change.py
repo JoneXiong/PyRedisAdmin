@@ -8,7 +8,7 @@ def delete_value(key,value,type,cl):
         cl.hdel(key, value)
     elif type=="list":
         cl.lset(key, value, '__delete__')
-        cl.lrem(key, 0, '__delete__')
+        cl.lrem(key, '__delete__', 0)
     elif type=="set":
         cl.srem(key, value)
     elif type=="zset":
