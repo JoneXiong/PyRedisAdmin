@@ -7,7 +7,8 @@ def get_all_trees(cur_server_index=0,key=None, db=0):
     from redis_api import get_all_keys_tree,get_client
     from config import base
     server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=db)
+    
+    cl = get_client(host=server['host'], port=server['port'],db=db, password=server.has_key('password') and server['password'] or None )
     try:
         ret = get_all_keys_tree(client=cl,key=key)
         return ret
@@ -23,7 +24,7 @@ def get_db_trees():
     for server in servers:
         id = "server%s"%m_index
         tar = {"pId": "root", "id": id, "name":server["name"]}
-        client = get_tmp_client(host=server['host'], port=server['port'])
+        client = get_tmp_client(host=server['host'], port=server['port'], password=server.has_key('password') and server['password'] or None)
         info_dict =client.info()
         me.append(tar)
         for i in range(server["databases"]):
@@ -40,9 +41,9 @@ def get_redis_info():
     outstr = ''
     ct = 0
     for server in servers:
-        status = check_connect(server['host'], server['port'])
+        status = check_connect(server['host'], server['port'], password=server.has_key('password') and server['password'] or None)
         if status:
-            client = get_tmp_client(host=server['host'], port=server['port'])
+            client = get_tmp_client(host=server['host'], port=server['port'], password=server.has_key('password') and server['password'] or None)
             info_dict =client.info()
             if not info_dict.has_key("db0"):
                 outstr +="Not exist database (db0)"

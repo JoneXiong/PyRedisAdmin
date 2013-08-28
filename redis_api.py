@@ -104,10 +104,10 @@ def get_all_keys_tree(client=None,key='*'):
         e['name'] = "%s <font color='#BFBFBF'>(%s)</font>"%(e['name'],m_len)
     return me.values()
     
-def check_connect(host,port):
+def check_connect(host,port, password=None):
     from redis import Connection
     try:
-        conn = Connection(host=host, port=port)
+        conn = Connection(host=host, port=port, password=password)
         conn.connect()
         return True
     except:

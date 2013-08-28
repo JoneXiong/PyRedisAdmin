@@ -68,7 +68,7 @@ def view():
     fullkey = request.GET.get('key', '')
     refmodel = request.GET.get('refmodel',None)
     server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index)
+    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
     if cl.exists(fullkey):
         title_html = title_html(fullkey, cur_server_index, cur_db_index)
         general_html = general_html(fullkey, cur_server_index, cur_db_index, cl)
@@ -99,7 +99,7 @@ def delete():
     value = request.GET.get('value', None)
     type = request.GET.get('type', None)
     server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index)
+    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
     if value:
         delete_value(key,value,type,cl)
     else:
