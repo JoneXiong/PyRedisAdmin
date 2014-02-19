@@ -24,6 +24,53 @@
 			clearInterval(timer);
 		  }
 		); 
+		
+		function renameKey(url,val){
+			newkey = window.prompt('Input',val);
+			if (newkey){
+				window.location.href = url + '&new='+newkey;
+			}
+		}
+		function edit(url,value){
+			newkey = window.prompt('Input',value);
+			if (newkey){
+				window.location.href = url + '&new='+newkey;
+			}
+		}
+		function add(url,type){
+			if (type == 'list' || type == 'set') {
+				value = window.prompt('Input', '');
+				if (value) {
+					window.location.href = url + '&value=' + value;
+				}
+			}
+			else 
+				if (type == 'hash') {
+					name = window.prompt('Input the name', '');
+					if (name) {
+						value = window.prompt('Input the value', '');
+						if (value) {
+							window.location.href = url + '&name=' + name + '&value=' + value;
+						}
+					}
+				}
+				else 
+					if (type == 'zset') {
+						score = window.prompt('Input the score', '');
+						if (score) {
+							value = window.prompt('Input the value', '');
+							if (value) {
+								window.location.href = url + '&score=' + score + '&value=' + value;
+							}
+						}
+					}
+		}
+		function changeTTL(url,val){
+			newttl = window.prompt('Input',val);
+			if (newttl){
+				window.location.href = url + '&new='+newttl;
+			}
+		}
 	</script>
 <div id = "out_html">
 {{! out_html }}

@@ -56,19 +56,11 @@ def overview():
 
 @route('/view')
 def view():
-    from config import base
-    from redis_api import get_client
     from data_view import general_html,title_html
-    try:
-        cur_server_index = int(request.GET.get('s', '0'))
-        cur_db_index = int(request.GET.get('db', '0'))
-    except:
-        cur_server_index = 0
-        cur_db_index = 0
     fullkey = request.GET.get('key', '')
     refmodel = request.GET.get('refmodel',None)
-    server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
+    
+    cl,cur_server_index,cur_db_index = get_cl()
     if cl.exists(fullkey):
         title_html = title_html(fullkey, cur_server_index, cur_db_index)
         general_html = general_html(fullkey, cur_server_index, cur_db_index, cl)
@@ -82,37 +74,73 @@ def view():
     
 @route('/edit')
 def edit():
-    return 'Still in developme. You can see it in next version.'
+    from data_change import edit_value
+    key = request.GET.get('key', None)
+    value = request.GET.get('value', None)
+    type = request.GET.get('type', None)
+    new = request.GET.get('new', None)
+    score = request.GET.get('score', None)
+    cl,cur_server_index,cur_db_index = get_cl()
+    edit_value(key,value,new,score,type,cl)
+    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
-@route('/delete')
-def delete():
+@route('/add')
+def add():
+    from data_change import add_value
+    key = request.GET.get('key', None)
+    value = request.GET.get('value', None)
+    type = request.GET.get('type', None)
+    name = request.GET.get('name', None)
+    score = request.GET.get('score', None)
+    cl,cur_server_index,cur_db_index = get_cl()
+    add_value(key,value,name,score,type,cl)
+    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+
+def get_cl():
     from config import base
     from redis_api import get_client
-    from data_change import delete_key, delete_value
     try:
         cur_server_index = int(request.GET.get('s', '0'))
         cur_db_index = int(request.GET.get('db', '0'))
     except:
         cur_server_index = 0
         cur_db_index = 0
+    server = base['servers'][cur_server_index]
+    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
+    return cl,cur_server_index,cur_db_index
+    
+
+@route('/delete')
+def delete():
+    from data_change import delete_key, delete_value
     key = request.GET.get('key', None)
     value = request.GET.get('value', None)
     type = request.GET.get('type', None)
-    server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
+    cl,cur_server_index,cur_db_index = get_cl()
     if value:
         delete_value(key,value,type,cl)
     else:
         delete_key(key,cl)
-    return 'ok'
+    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/ttl')
 def ttl():
-    return 'Still in developme. You can see it in next version.'
+    from data_change import change_ttl
+    cl,cur_server_index,cur_db_index = get_cl()
+    key = request.GET.get('key', None)
+    new = request.GET.get('new', None)
+    if new:
+        change_ttl(key,int(new),cl)
+    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/rename')
 def rename():
-    return 'Still in developme. You can see it in next version.'
+    from data_change import rename_key
+    cl,cur_server_index,cur_db_index = get_cl()
+    key = request.GET.get('key', None)
+    new = request.GET.get('new', None)
+    rename_key(key,new,cl)
+    return '<script type=text/javascript> alert("ok");parent.location.reload();</script>'
 
 @route('/export')
 def export():
@@ -123,9 +151,11 @@ def iimport():
     return 'Still in developme. You can see it in next version.'
 
 @route('/save')
-def info():
-    return 'Still in developme. You can see it in next version.'
+def save():
+    cl,cur_server_index,cur_db_index = get_cl()
+    cl.bgsave()
+    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 
 if __name__  == "__main__":
-    run(host='0.0.0.0', port=8086, reloader=True)
+    run(host='0.0.0.0', port=8085, reloader=True)

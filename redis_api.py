@@ -1,6 +1,8 @@
 # coding=utf-8
 import redis
 
+import config
+
 client = None
 server_ip = None
 db_index = None
@@ -49,7 +51,7 @@ def get_all_keys_dict(client=None):
     for key in m_all:
         if len(key)>100:
             continue
-        key_levels = key.split(':')
+        key_levels = key.split(config.base['seperator'])
         cur = me
         for lev in key_levels:
             if cur.has_key(lev):
@@ -72,10 +74,10 @@ def get_all_keys_tree(client=None,key='*'):
     for key in m_all:
         if len(key)>100:
             continue
-        key_levels = key.split(':')
+        key_levels = key.split(config.base['seperator'])
         pre = 'root'
         for lev in key_levels:
-            id = (pre!='root' and '%s:%s'%(pre,lev) or lev)
+            id = (pre!='root' and '%s%s%s'%(pre,config.base['seperator'],lev) or lev)
             if me.has_key(id):
                 pre = id
             else:
