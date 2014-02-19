@@ -14,7 +14,7 @@ base = {
               'databases':16
               },
           ],
-    'seperator' : '_',
+    'seperator' : ':',
     'maxkeylen' : 100
 }
 media_prefix = "pyred_media"
