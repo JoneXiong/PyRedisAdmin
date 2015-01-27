@@ -3,14 +3,8 @@ base = {
               {'index':0,
                'name': 'server1', 
               'host': '127.0.0.1',
-              'port': 6379,
+              'port': 10086,
               'password': '',
-              'databases':16
-              },
-              {'index':1,
-               'name': 'server2', 
-              'host': '127.0.0.1',
-              'port': 6379,
               'databases':16
               },
           ],

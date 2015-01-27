@@ -102,7 +102,7 @@ def list_html(fullkey,sid, db, client):
         </div></td><td><div>
           <a href="/delete?s=%(sid)s&db=%(db)s&amp;type=list&amp;key=%(fullkey)s&amp;value=%(index)s" class="delval"><img src="/%(media_prefix)s/images/delete.png" width="16" height="16" title="Delete" alt="[X]"></a>
         </div></td></tr>
-        '''%({'value':value, 'index':index, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
+        '''%({'value':value.replace('"','\\\''), 'index':index, 'sid':sid, 'db':db, 'fullkey':fullkey, 'alt_str':alt_str, 'media_prefix':media_prefix})
         alt = not alt
         index +=1
     out +='</table>'
