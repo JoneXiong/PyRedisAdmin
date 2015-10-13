@@ -1,31 +1,33 @@
-from urlparse import urlparse
+from contextlib import contextmanager
 
-from .client import Redis
 
-DEFAULT_DATABASE_ID = 0
+try:
+    import hiredis
+    HIREDIS_AVAILABLE = True
+except ImportError:
+    HIREDIS_AVAILABLE = False
 
-def from_url(url, db=None):
-    """Returns an active Redis client generated from the given database URL.
+
+def from_url(url, db=None, **kwargs):
+    """
+    Returns an active Redis client generated from the given database URL.
 
     Will attempt to extract the database id from the path url fragment, if
     none is provided.
     """
+    from redis.client import Redis
+    return Redis.from_url(url, db, **kwargs)
 
-    url = urlparse(url)
 
-    # Make sure it's a redis database.
-    if url.scheme:
-        assert url.scheme == 'redis'
+@contextmanager
+def pipeline(redis_obj):
+    p = redis_obj.pipeline()
+    yield p
+    p.execute()
 
-    # Attempt to resolve database id.
-    if db is None:
-        try:
-            db = int(url.path.replace('/', ''))
-        except (AttributeError, ValueError):
-            db = DEFAULT_DATABASE_ID
 
-    return Redis(
-        host=url.hostname,
-        port=url.port,
-        db=db,
-        password=url.password)
+class dummy(object):
+    """
+    Instances of this class can be used as an attribute container.
+    """
+    pass
