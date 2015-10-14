@@ -21,7 +21,7 @@
 		function wSize(){
 			var strs=getWindowSize().toString().split(",");
 			$("#server_view, #db_view, #openClose").height(strs[0]-5);
-			$("#right").width($("body").width()-$("#left").width()-$("#openClose").width()-5);
+			$("#right").width($("body").width()-$("#left").width()-$("#openClose").width()-25);
 		}
 	</script>
 	<script src="/{{media_prefix}}/common/wsize.min.js" type="text/javascript"></script>
