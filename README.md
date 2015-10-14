@@ -14,7 +14,7 @@ Quick start
 2. 配置config.py,加入要管理的redis的主机地址和端口、密码等
 3. 运行: python routes.py
 
-下一步
+Next work
 ========
 1. 完善数据编辑和数据导入导出功能
 2. 加入redis数据分库的管理[已完成]
