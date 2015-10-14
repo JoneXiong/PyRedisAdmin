@@ -3,7 +3,7 @@ PyRedisAdmin
 
 A web GUI for Redis data management
 
-概述
+About
 ========
 PyRedisAdmin 是一个方便查看和管理Redis数据的web界面工具，使用Python开发。基于开源的轻量级python Web框架"Mole"
 构建而成，不依赖于其他第三方库，部署相当方便。
