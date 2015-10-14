@@ -30,8 +30,19 @@
 		}
 		function do_Search(){
 			var value = $.trim(key.get(0).value);
-			urlpara = "?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&k="+ value;
+			urlpara = "?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&k="+ value+"&cursor="+ '{{pre_scan_cursor}}';
 			window.location.href = urlpara;
+		}
+		
+		function do_Scan(){
+			var value = $.trim($('#cursor').get(0).value);
+			urlpara = "?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&k="+ '{{cur_search_key}}'+"&cursor="+ value;
+			window.location.href = urlpara;
+		}
+		
+		function to_key(){
+			var value = $.trim($('#tokey').get(0).value);
+			parent.document.getElementById("cmsMainFrame").src="/view?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&key="+value;
 		}
 		
 		function onClick(event, treeId, treeNode, clickFlag) {
@@ -111,11 +122,18 @@
 	<div class="accordion-group" style="padding-left:10px">
 	    <div class="accordion-heading">
 	         <div id="search" class="control-group">
-				<span><input type="text" class="empty" id="key" name="key" maxlength="50" style="width:100px;"></span>
-				<input id="btnSubmit" class="btn" type="submit" value="Search" onclick="do_Search();">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		    	<input id="btnSubmit" class="btn" type="submit" value="Expand" onclick="do_Expand();">
-				<input id="btnSubmit" class="btn" type="submit" value="Collapse" onclick="do_Collapse();">
-		     </div>
+				<span><input type="text" class="empty" id="key" name="key" value="{{cur_search_key}}" maxlength="50" style="width:100px;margin-top: 10px;height: 30px" placeholder="Search"></span>
+				<a id="btnSubmit" class="btn" onclick="do_Search();"><i class="icon-search"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				
+				<span><input type="text" class="empty" id="cursor" name="cursor" value="{{cur_scan_cursor}}" title="Current cursor positon, you can set a value to scan" maxlength="50" style="width:80px;margin-top: 10px;height: 30px"></span>
+				<a id="btnSubmit" class="btn" onclick="do_Scan();" title="To see next batch of keys"><i class="icon-play"></i>Scan</a><br/>
+				
+				<span><input type="text" class="empty" id="tokey" name="tokey" maxlength="50" style="width:100px;margin-top: 10px;height: 30px" placeholder="Exact  key"></span>
+				<input id="btnSubmit" class="btn" type="submit" value="Go" title="To see a exact  key directly" onclick="to_key();">&nbsp;&nbsp;
+				
+				<a  href="javascript:;" onclick="do_Expand();" title="Expand all"><i class="icon-folder-open"></i> Expand</a> /
+				<a  href="javascript:;" onclick="do_Collapse();" title="Collapse all"><i class="icon-folder-close"></i>Collapse</a>  ({{count}} keys)
+
 	    </div>
 	    <div class="accordion-body">
 			<div class="accordion-inner">

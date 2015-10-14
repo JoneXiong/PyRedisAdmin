@@ -2,40 +2,44 @@
 from time import strftime,localtime
 
 from config import  media_prefix
+from config import base
     
-def get_all_trees(cur_server_index=0,key=None, db=0):
+def get_all_trees(cur_server_index=0,key=None, db=0, cursor=0):
     from redis_api import get_all_keys_tree,get_client
-    from config import base
     server = base['servers'][cur_server_index]
     
     cl = get_client(host=server['host'], port=server['port'],db=db, password=server.has_key('password') and server['password'] or None )
     try:
-        ret = get_all_keys_tree(client=cl,key=key)
+        ret = get_all_keys_tree(client=cl,key=key,cursor=cursor)
         return ret
     except:
         return u'Could not connect %s:%s'%(server['host'],server['port'])
     
 def get_db_trees():
-    from config import base
-    from redis_api import get_tmp_client
+    from redis_api import get_tmp_client,check_connect
     servers = base['servers']
     me = [{"pId": "0" ,"id": "root","name":"", "open":True}]
     m_index = 0
     for server in servers:
         id = "server%s"%m_index
-        tar = {"pId": "root", "id": id, "name":server["name"]}
-        client = get_tmp_client(host=server['host'], port=server['port'], password=server.has_key('password') and server['password'] or None)
-        info_dict =client.info()
+        status = check_connect(server['host'], server['port'], password=server.has_key('password') and server['password'] or None)
+        if status:
+            tar = {"pId": "root", "id": id, "name":server["name"]}
+            client = get_tmp_client(host=server['host'], port=server['port'], password=server.has_key('password') and server['password'] or None)
+            info_dict =client.info()
+        else:
+            tar = {"pId": "root", "id": id, "name": 'ERROR: Could not connect to Redis ('+server['host']+ ':'+ str(server['port'])+')'}
         me.append(tar)
-        for i in range(server["databases"]):
-            if info_dict.has_key("db%s"%i):
-                m_tar = {"pId": id, "id": "db%s"%i, "name":"db%s <font color='#BFBFBF'>(%s)</font>"%(i,info_dict["db%s"%i]['keys'])}
-                me.append(m_tar)
+        
+        if status:
+            for i in range(server["databases"]):
+                if info_dict.has_key("db%s"%i):
+                    m_tar = {"pId": id, "id": "db%s"%i, "name":"db%s <font color='#BFBFBF'>(%s)</font>"%(i,info_dict["db%s"%i]['keys'])}
+                    me.append(m_tar)
         m_index+=1
     return me
 
 def get_redis_info():
-    from config import base
     from redis_api import check_connect,get_tmp_client
     servers = base['servers']
     outstr = ''

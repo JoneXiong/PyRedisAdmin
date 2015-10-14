@@ -7,6 +7,7 @@ from mole import response
 from mole.mole import json_dumps
 
 from config import  media_prefix
+import config
 
 @route('/%s/:file#.*#'%media_prefix)
 def media(file):
@@ -19,13 +20,26 @@ def db_tree():
     try:
         cur_server_index = int(request.GET.get('s', '0'))
         cur_db_index = int(request.GET.get('db', '0'))
+        cur_scan_cursor = int(request.GET.get('cursor', '0'))
     except:
         cur_server_index = 0
         cur_db_index = 0
+        cur_scan_cursor = 0
     key = request.GET.get('k', '*')
-    all_trees = get_all_trees(cur_server_index, key, db=cur_db_index)
+    all_trees = get_all_trees(cur_server_index, key, db=cur_db_index, cursor=cur_scan_cursor)
+    next_scan_cursor, count = all_trees.pop()
     m_config = config.base
-    return template('db_tree', all_trees=json_dumps(all_trees), config=m_config, cur_server_index=cur_server_index,cur_db_index=cur_db_index, media_prefix=media_prefix)
+    return template('db_tree', 
+                    all_trees=json_dumps(all_trees), 
+                    config=m_config, 
+                    cur_server_index=cur_server_index,
+                    cur_db_index=cur_db_index,
+                    cur_scan_cursor=next_scan_cursor, 
+                    pre_scan_cursor=cur_scan_cursor,
+                    cur_search_key= (key!='*' and key or ''), 
+                    count = count,
+                    media_prefix=media_prefix
+                    )
 
 
 @route('/db_view')
@@ -158,4 +172,4 @@ def save():
 
 
 if __name__  == "__main__":
-    run(host='0.0.0.0', port=8085, reloader=True)
+    run(host=config.host, port=config.port, reloader=config.debug)
