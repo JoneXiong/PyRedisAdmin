@@ -20,6 +20,8 @@ Quick start
 2. 加入redis数据分库的管理[已完成]
 3. 加入redis账号验证功能[已完成]
 
+Screenshots
+========
 ![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/info.jpg)
 
 ![data](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/data.jpg)
