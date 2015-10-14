@@ -62,13 +62,15 @@ def get_all_keys_dict(client=None):
             cur = cur[lev]
     return me
 
-def get_all_keys_tree(client=None,key='*'):
+def get_all_keys_tree(client=None,key='*', cursor=0):
     if key!='*':
         key = '*%s*'%key
     if client:
-        m_all = client.keys(key)
+        next_cursor,m_all = client.scan(cursor=cursor, match=key, count=config.scan_batch)
+        #m_all = client.keys(key)
     else:
-        m_all = get_client().keys(key)
+        next_cursor,m_all = get_client().scan(cursor=cursor, match=key, count=config.scan_batch)
+        #m_all.get_client().keys(key)
     m_all.sort()
     me = {'root':{"pId": "0" ,"id": "root","name":"","count":0, "open":True}}
     for key in m_all:
@@ -90,21 +92,24 @@ def get_all_keys_tree(client=None,key='*'):
         child_len = e['count']
         fullkey = e['id']
         if child_len==0:
-            m_type = client.type(fullkey)
-            if not m_type:return
             m_len = 0
-            if m_type=='hash':
-                m_len = client.hlen(fullkey)
-            elif m_type=='list':
-                m_len = client.llen(fullkey)
-            elif m_type=='set':
-                m_len = len(client.smembers(fullkey))
-            elif m_type=='zset':
-                m_len = len(client.zrange(fullkey,0,-1))
+            if config.show_key_self_count:
+                m_type = client.type(fullkey)
+                if not m_type:return
+                if m_type=='hash':
+                    m_len = client.hlen(fullkey)
+                elif m_type=='list':
+                    m_len = client.llen(fullkey)
+                elif m_type=='set':
+                    m_len = len(client.smembers(fullkey))
+                elif m_type=='zset':
+                    m_len = len(client.zrange(fullkey,0,-1))
         else:
             m_len = child_len
         e['name'] = "%s <font color='#BFBFBF'>(%s)</font>"%(e['name'],m_len)
-    return me.values()
+    val_list = me.values()
+    val_list.append( (next_cursor,len(m_all) ) )
+    return val_list
     
 def check_connect(host,port, password=None):
     from redis import Connection
