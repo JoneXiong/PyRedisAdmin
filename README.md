@@ -24,6 +24,8 @@ Next work
 
 Screenshots
 ========
+![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/desc.png)
+
 ![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/info.jpg)
 
 ![data](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/data.jpg)
