@@ -27,10 +27,15 @@ def db_tree():
         cur_scan_cursor = 0
     key = request.GET.get('k', '*')
     all_trees = get_all_trees(cur_server_index, key, db=cur_db_index, cursor=cur_scan_cursor)
-    next_scan_cursor, count = all_trees.pop()
+    if type(all_trees)==list:
+        next_scan_cursor, count = all_trees.pop()
+        all_trees_json = json_dumps(all_trees)
+    else:
+        next_scan_cursor, count = 0, 0
+        all_trees_json = []
     m_config = config.base
     return template('db_tree', 
-                    all_trees=json_dumps(all_trees), 
+                    all_trees=all_trees_json, 
                     config=m_config, 
                     cur_server_index=cur_server_index,
                     cur_db_index=cur_db_index,
