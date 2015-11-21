@@ -1,0 +1,56 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2015-11-21 12:47+0800\n"
+"PO-Revision-Date: 2015-11-21 12:53+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.7.7\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: D:\\source\\PyRedisAdmin\\templates\n"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:128
+msgid "Current cursor positon, you can set a value to scan"
+msgstr "当前的游标位置，您可以设置一个值来查看更多键"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:129
+msgid "To see next batch of keys"
+msgstr "下一批的键值"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:129
+msgid "Scan"
+msgstr "下一批"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:132
+msgid "To see a exact  key directly"
+msgstr "直接查看指定键"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:134
+msgid "Expand all"
+msgstr "展开全部"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:134
+msgid "Expand"
+msgstr "展开"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:135
+msgid "Collapse all"
+msgstr "折叠全部"
+
+#: D:\source\PyRedisAdmin\templates/db_tree.py:135
+msgid "Collapse"
+msgstr "折叠"
+
+#: D:\source\PyRedisAdmin\templates/server_tree.py:53
+msgid "overview"
+msgstr "概要"
+
+#: D:\source\PyRedisAdmin\templates/view.py:11
+msgid "Open the monitor"
+msgstr "打开实时监视"
