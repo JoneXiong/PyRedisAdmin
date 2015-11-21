@@ -8,6 +8,7 @@ from mole.mole import json_dumps
 
 from config import  media_prefix
 import config
+import i18n
 
 @route('/%s/:file#.*#'%media_prefix)
 def media(file):

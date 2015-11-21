@@ -25,3 +25,5 @@ debug = True
 
 scan_batch = 10000
 show_key_self_count = False
+
+lang = 'zh_CN'
