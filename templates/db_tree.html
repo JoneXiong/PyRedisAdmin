@@ -125,14 +125,14 @@
 				<span><input type="text" class="empty" id="key" name="key" value="{{cur_search_key}}" maxlength="50" style="width:100px;margin-top: 10px;height: 30px" placeholder="Search"></span>
 				<a id="btnSubmit" class="btn" onclick="do_Search();"><i class="icon-search"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				
-				<span><input type="text" class="empty" id="cursor" name="cursor" value="{{cur_scan_cursor}}" title="Current cursor positon, you can set a value to scan" maxlength="50" style="width:80px;margin-top: 10px;height: 30px"></span>
-				<a id="btnSubmit" class="btn" onclick="do_Scan();" title="To see next batch of keys"><i class="icon-play"></i>Scan</a><br/>
+				<span><input type="text" class="empty" id="cursor" name="cursor" value="{{cur_scan_cursor}}" title="{{ _('Current cursor positon, you can set a value to scan') }}" maxlength="50" style="width:80px;margin-top: 10px;height: 30px"></span>
+				<a id="btnSubmit" class="btn" onclick="do_Scan();" title="{{ _('To see next batch of keys') }}"><i class="icon-play"></i>{{ _('Scan') }}</a><br/>
 				
 				<span><input type="text" class="empty" id="tokey" name="tokey" maxlength="50" style="width:100px;margin-top: 10px;height: 30px" placeholder="Exact  key"></span>
-				<input id="btnSubmit" class="btn" type="submit" value="Go" title="To see a exact  key directly" onclick="to_key();">&nbsp;&nbsp;
+				<input id="btnSubmit" class="btn" type="submit" value="Go" title="{{ _('To see a exact  key directly') }}" onclick="to_key();">&nbsp;&nbsp;
 				
-				<a  href="javascript:;" onclick="do_Expand();" title="Expand all"><i class="icon-folder-open"></i> Expand</a> /
-				<a  href="javascript:;" onclick="do_Collapse();" title="Collapse all"><i class="icon-folder-close"></i>Collapse</a>  ({{count}} keys)
+				<a  href="javascript:;" onclick="do_Expand();" title="{{ _('Expand all') }}"><i class="icon-folder-open"></i> {{ _('Expand') }}</a> /
+				<a  href="javascript:;" onclick="do_Collapse();" title="{{ _('Collapse all') }}"><i class="icon-folder-close"></i>{{ _('Collapse') }}</a>  ({{count}} keys)
 
 	    </div>
 	    <div class="accordion-body">
