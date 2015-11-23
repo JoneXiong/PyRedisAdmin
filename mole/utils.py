@@ -28,7 +28,7 @@ if sys.version_info >= (3,0,0):
 else:
     def touni(x, enc='utf8'):
         """ Convert anything to unicode """
-        return x if isinstance(x, unicode) else unicode(str(x), encoding=enc)
+        return x if isinstance(x, unicode) else unicode(str(x), encoding=enc, errors='ignore')
     
 # Convert strings and unicode to native strings
 if sys.version_info >= (3,0,0):
