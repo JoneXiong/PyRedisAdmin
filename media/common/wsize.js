@@ -1,8 +1,3 @@
-/*!
- * Copyright &copy; 2012-2013 <a href="https://github.com/thinkgem/jeesite">JeeSite</a> All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- */
 
 // 主框架窗口大小调整
 $("#left").width(leftWidth);
