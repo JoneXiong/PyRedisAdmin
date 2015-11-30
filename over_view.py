@@ -53,9 +53,9 @@ def get_redis_info():
                 outstr +="Not exist database (db0)"
             else:
                 outstr +='''
-                <div class="server">
+                <div class="server" style="float:left; margin-left:20px">
                   <h2>%(name)s</h2>
-                  <table>
+                  <table class="table table-bordered table-striped" style="max-width: 400px"><tbody>
                       <tr><td><div>Redis version:</div></td><td><div>%(redis_version)s</div></td></tr>
                       <tr><td><div>Keys:</div></td><td><div>%(keys)s</div></td></tr>
                       <tr><td><div>Memory used:</div></td><td><div>%(used_memory)s kb</div></td></tr>
@@ -66,7 +66,7 @@ def get_redis_info():
                                <a href="/save?s=%(s_index)s"><img src="/%(media_prefix)s/images/save.png" width="16" height="16" title="Save Now" alt="[S]" class="imgbut"></a>
                                <a href="/export?s=%(s_index)s"><img src="/%(media_prefix)s/images/export.png" width="16" height="16" title="Export" alt="[E]" class="imgbut"></a>
                                 <a href="/import?s=%(s_index)s"><img src="/%(media_prefix)s/images/import.png" width="16" height="16" title="Import" alt="[I]" class="imgbut"></a>
-                           </div></td></tr>
+                           </div></td></tr></tbody>
                   </table></div>'''%({
                                 'name': server['name'],
                                 'redis_version': info_dict['redis_version'],

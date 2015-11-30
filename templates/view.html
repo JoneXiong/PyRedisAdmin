@@ -3,27 +3,29 @@
 <head>
 <meta charset=utf-8>
 <title>PyRedisAdmin</title>
-<link rel=stylesheet href="/{{media_prefix}}/css/common.css">
-<script src="/{{media_prefix}}/jquery/jquery1.6.2.js"></script>
+
+ %include site_media.html media_prefix=media_prefix
 
 </head>
 <body>
-	<button id="moniter">{{ trans('Open the monitor') }}</button>
+	<button class="btn" id="moniter">{{ trans('Open the monitor') }}</button>
 	<script>
 		var timer;
-		$("#moniter").toggle(
+		var flag = true;
+		$("#moniter").click(
 		  function () {
-		  	$(this).text("Close the monitor");
-		    timer = setInterval(function () { 
-				 $("#out_html").load(window.location.href+"&refmodel=on");
-			}, 1500); 
-			
-		  },
-		  function () {
-		    $(this).text("Open the monitor");
-			clearInterval(timer);
-		  }
-		); 
+		  	if (flag){
+		  		flag = false;
+			  	$(this).text("Close the monitor");
+			    timer = setInterval(function () { 
+					 $("#out_html").load(window.location.href+"&refmodel=on");
+				}, 1500); 
+			}else{
+				flag = true;
+			    $(this).text("Open the monitor");
+				clearInterval(timer);
+			}
+		  }); 
 		
 		function renameKey(url,val){
 			newkey = window.prompt('Input',val);
@@ -47,7 +49,7 @@
 			else 
 				if (type == 'hash') {
 					name = window.prompt('Input the name', '');
-					if (name) {
+					if (name=="" || name==null) {
 						value = window.prompt('Input the value', '');
 						if (value) {
 							window.location.href = url + '&name=' + name + '&value=' + value;
