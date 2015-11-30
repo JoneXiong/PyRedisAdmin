@@ -14,7 +14,7 @@ import i18n
 def media(file):
     return static_file(file, root='./media')
 
-@route('/tree')
+@route('/db_tree')
 def db_tree():
     from over_view import get_all_trees
     import config
@@ -59,7 +59,7 @@ def db_view():
     key = request.GET.get('k', '*')
     return template("db_view",media_prefix=media_prefix, cur_server_index=cur_server_index, cur_db_index=cur_db_index, keyword=key)
 
-@route('/server_view')
+@route('/server_tree')
 def server_tree():
     from over_view import get_db_trees
     all_trees = get_db_trees()
