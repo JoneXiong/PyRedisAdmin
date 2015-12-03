@@ -8,7 +8,7 @@
 <link href="/{{media_prefix}}/jquery-ztree/3.5.12/css/zTreeStyle/zTreeStyle.min.css" rel="stylesheet" type="text/css"/>
 <script src="/{{media_prefix}}/jquery-ztree/3.5.12/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
 	<style type="text/css">
-		.ztree {margin-top:5px;*margin:-5px 0 5px -2px;_position:relative;_margin:0;_top:-10px;overflow:hidden;}
+		.ztree {margin-top:5px;overflow:hidden;}
 		.ztree li span.button.level0, .ztree li a.level0 {display:none;height:0;}
 		.ztree li ul.level0 {padding:0;background:none;}
 	</style>
@@ -119,8 +119,8 @@
 	</script>
 </head>
 <body>
-	<div class="accordion-group" style="padding-left:10px">
-	    <div class="accordion-heading">
+	<div class="accordion-group" style="padding-left:10px;">
+	    <div class="accordion-heading navbar-fixed-top" style="height: 95px; background-color: white; border: 1px solid #e5e5e5">
 	         <div id="search" class="control-group">
 				<span><input type="text" class="empty" id="key" name="key" value="{{cur_search_key}}" maxlength="50" style="width:100px;margin-top: 10px;height: 30px" placeholder="Search"></span>
 				<a id="btnSubmit" class="btn" onclick="do_Search();"><i class="icon-search"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -134,11 +134,10 @@
 				<a  href="javascript:;" onclick="do_Expand();" title="{{ trans('Expand all') }}"><i class="icon-folder-open"></i> {{ trans('Expand') }}</a> /
 				<a  href="javascript:;" onclick="do_Collapse();" title="{{ trans('Collapse all') }}"><i class="icon-folder-close"></i>{{ trans('Collapse') }}</a>  ({{count}} keys)
 
+	    	</div>
 	    </div>
-	    <div class="accordion-body">
-			<div class="accordion-inner">
+	    <div class="accordion-body" style="margin-top: 95px">
 				<div id="tree" class="ztree"></div>
-			</div>
 	    </div>
 	</div>
 </body>
