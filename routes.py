@@ -133,15 +133,15 @@ def get_cl():
 @route('/delete')
 def delete():
     from data_change import delete_key, delete_value
-    key = request.GET.get('key', None)
+    key = request.GET.get('key', '')
     value = request.GET.get('value', None)
     type = request.GET.get('type', None)
-    cur_scan_cursor = int(request.GET.get('cursor', '0'))
+    cur_scan_cursor = request.GET.get('cursor', None)
     cl,cur_server_index,cur_db_index = get_cl()
     if value:
         delete_value(key,value,type,cl)
     else:
-        delete_key(key,cl, cursor=cur_scan_cursor if cur_scan_cursor else None)
+        delete_key(key,cl, cursor=cur_scan_cursor)
         return '<script type=text/javascript> alert("ok")</script>'
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 

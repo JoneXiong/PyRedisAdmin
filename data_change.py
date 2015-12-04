@@ -3,7 +3,7 @@
 import config
 
 def delete_key(key,cl, cursor=None):
-    if cursor:
+    if cursor!=None:
         key = key + '*'
         next_cursor,m_all = cl.scan(cursor=cursor, match=key, count=config.scan_batch)
         for e in m_all:

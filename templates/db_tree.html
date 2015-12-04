@@ -29,6 +29,10 @@
 				}
 			}
 		}
+		function do_Delete(){
+			parent.document.getElementById("cmsMainFrame").src = "/delete?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&key=&cursor="+ '{{pre_scan_cursor}}';
+			window.location.reload();
+		}
 		function do_Search(){
 			var value = $.trim(key.get(0).value);
 			urlpara = "?s="+{{cur_server_index}}+"&db="+{{cur_db_index}}+"&k="+ value+"&cursor="+ '{{pre_scan_cursor}}';
@@ -143,8 +147,8 @@
 				<input id="btnSubmit" class="btn" type="submit" value="Go" title="{{ trans('To see a exact  key directly') }}" onclick="to_key();">&nbsp;&nbsp;
 				
 				<a  href="javascript:;" onclick="do_Expand();" title="{{ trans('Expand all') }}"><i class="icon-folder-open"></i> {{ trans('Expand') }}</a> /
-				<a  href="javascript:;" onclick="do_Collapse();" title="{{ trans('Collapse all') }}"><i class="icon-folder-close"></i>{{ trans('Collapse') }}</a>  ({{count}} keys)
-
+				<a  href="javascript:;" onclick="do_Collapse();" title="{{ trans('Collapse all') }}"><i class="icon-folder-close"></i>{{ trans('Collapse') }}</a>
+				&nbsp;<a  href="javascript:;" onclick="do_Delete();" title="{{ trans('delete all') }}"><i class="icon-remove-sign"></i></a>  ({{count}} keys)
 	    	</div>
 	    </div>
 	    <div class="accordion-body" style="margin-top: 95px">
