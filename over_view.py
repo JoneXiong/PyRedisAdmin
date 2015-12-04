@@ -24,7 +24,7 @@ def get_db_trees():
         id = "server%s"%m_index
         status = check_connect(server['host'], server['port'], password=server.has_key('password') and server['password'] or None)
         if status:
-            tar = {"pId": "root", "id": id, "name":server["name"]}
+            tar = {"pId": "root", "id": id, "count":"", "name":server["name"]}
             client = get_tmp_client(host=server['host'], port=server['port'], password=server.has_key('password') and server['password'] or None)
             info_dict =client.info()
         else:
@@ -34,7 +34,8 @@ def get_db_trees():
         if status:
             for i in range(server["databases"]):
                 if info_dict.has_key("db%s"%i):
-                    m_tar = {"pId": id, "id": "db%s"%i, "name":"db%s <font color='#BFBFBF'>(%s)</font>"%(i,info_dict["db%s"%i]['keys'])}
+                    count = info_dict["db%s"%i]['keys']
+                    m_tar = {"pId": id, "id": "db%s"%i, "count": count, "name":"db%s <font color='#BFBFBF'>(%s)</font>"%(i, count)}
                     me.append(m_tar)
         m_index+=1
     return me
