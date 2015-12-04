@@ -136,11 +136,13 @@ def delete():
     key = request.GET.get('key', None)
     value = request.GET.get('value', None)
     type = request.GET.get('type', None)
+    cur_scan_cursor = int(request.GET.get('cursor', '0'))
     cl,cur_server_index,cur_db_index = get_cl()
     if value:
         delete_value(key,value,type,cl)
     else:
-        delete_key(key,cl)
+        delete_key(key,cl, cursor=cur_scan_cursor if cur_scan_cursor else None)
+        return '<script type=text/javascript> alert("ok")</script>'
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/ttl')

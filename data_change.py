@@ -1,7 +1,15 @@
 # coding=utf-8
 
-def delete_key(key,cl):
-    cl.delete(key)
+import config
+
+def delete_key(key,cl, cursor=None):
+    if cursor:
+        key = key + '*'
+        next_cursor,m_all = cl.scan(cursor=cursor, match=key, count=config.scan_batch)
+        for e in m_all:
+            cl.delete(e)
+    else:
+        cl.delete(key)
 
 def delete_value(key,value,type,cl):
     if type=="hash":
