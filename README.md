@@ -21,6 +21,7 @@ Next work
 3. ~~加入redis账号验证功能~~[已完成]
 4. ~~千万级以上海量数据的支持~~[已完成]
 5. 完善的数据导入导出功能
+6. 加入json数据的友好支持，提供json编辑器
 
 Screenshots
 ========
@@ -29,3 +30,15 @@ Screenshots
 ![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/desc.png)
 
 ![data](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/data.jpg)
+
+1. 模糊搜索
+2. 查看下一批
+3. 精确查看某key
+4. 展开/折叠所有
+5. 删除选定的key
+6. 实时自动刷新key的数据
+7. 重命名key/删除当前查看的key/导出key的数据到文件
+8. 更新key的过期时间
+9. 修改/删除key的成员数据
+10. 为key的数据添加新的成员
+11. 批量清除当前列出的所有key
