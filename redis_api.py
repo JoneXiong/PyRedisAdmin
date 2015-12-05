@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 import redis
 
 import config
@@ -70,7 +70,7 @@ def get_all_keys_tree(client=None,key='*', cursor=0):
         #m_all = client.keys(key)
     else:
         next_cursor,m_all = get_client().scan(cursor=cursor, match=key, count=config.scan_batch)
-        #m_all.get_client().keys(key)
+        #m_all = get_client().keys(key)
     m_all.sort()
     me = {'root':{"pId": "0" ,"id": "root","name":"","count":0, "open":True}}
     for key in m_all:

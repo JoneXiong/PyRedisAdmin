@@ -31,9 +31,11 @@ def db_tree():
     if type(all_trees)==list:
         next_scan_cursor, count = all_trees.pop()
         all_trees_json = json_dumps(all_trees)
+        error_msg = ''
     else:
         next_scan_cursor, count = 0, 0
         all_trees_json = []
+        error_msg = all_trees
     m_config = config.base
     return template('db_tree', 
                     all_trees=all_trees_json, 
@@ -44,6 +46,7 @@ def db_tree():
                     pre_scan_cursor=cur_scan_cursor,
                     cur_search_key= (key!='*' and key or ''), 
                     count = count,
+                    error_msg = error_msg,
                     media_prefix=media_prefix
                     )
 

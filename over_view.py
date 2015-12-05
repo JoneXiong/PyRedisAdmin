@@ -1,5 +1,6 @@
 # coding=utf-8
 from time import strftime,localtime
+import traceback
 
 from config import  media_prefix
 from config import base
@@ -12,8 +13,9 @@ def get_all_trees(cur_server_index=0,key=None, db=0, cursor=0):
     try:
         ret = get_all_keys_tree(client=cl,key=key,cursor=cursor)
         return ret
-    except:
-        return u'Could not connect %s:%s'%(server['host'],server['port'])
+    except Exception,e:
+        traceback.print_exc()
+        return u'Error to communicate with %s:%s "%s"'%(server['host'],server['port'], e)
     
 def get_db_trees():
     from redis_api import get_tmp_client,check_connect
