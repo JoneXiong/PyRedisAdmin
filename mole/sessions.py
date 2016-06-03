@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A fast, lightweight, and secure session WSGI middleware for use with GAE."""
+"""A fast, lightweight, and secure session WSGI middleware"""
 from Cookie import CookieError, SimpleCookie
 from base64 import b64decode, b64encode
 import datetime
@@ -10,38 +10,54 @@ import pickle
 import os
 import threading
 import time
+from mole import request
 
-#import memcache
-#from sqlalchemy.ext.declarative import declarative_base, Column
-#from sqlalchemy.types import BLOB,VARCHAR,INT,DATETIME
-#from sqlalchemy.orm import sessionmaker
-#from sqlalchemy.exc import SQLAlchemyError
-
-#from google.appengine.ext import db
 
 # Configurable cookie options
-COOKIE_NAME_PREFIX = "DgU"  # identifies a cookie as being one used by bottle-sessions (so you can set cookies too)
+COOKIE_NAME_PREFIX = "MoS"  # identifies a cookie as being one used by mole-sessions (so you can set cookies too)
 COOKIE_PATH = "/"
 DEFAULT_COOKIE_ONLY_THRESH = 4096  # most *nix paging size is 4096. There is no limit in header size in HTTP spec, it is nontheless limited by system's page size
+# 默认60分钟没有请求过则session过期
+DEFAULT_LIFETIME = datetime.timedelta(seconds=60*60*24*30)#datetime.timedelta(days=7)
 
-DEFAULT_LIFETIME = datetime.timedelta(seconds=60*30)#datetime.timedelta(days=7)
-
-#SessionModel Recycle tag
+#SessionModel 记录置为无效的标志
 SM_RECYCLE_TAG  = "_SESSIONMODEL_RECYCLE_TAG_"
 
 # constants
 SID_LEN = 43  # timestamp (10 chars) + underscore + md5 (32 hex chars)
 SIG_LEN = 44  # base 64 encoded HMAC-SHA256
+
 MAX_COOKIE_LEN = 4096
+
+# 设置Cookie过期的内容格式
 EXPIRE_COOKIE_FMT = ' %s=; expires=Wed, 01-Jan-1970 00:00:00 GMT; Path=' + COOKIE_PATH
-COOKIE_FMT = ' ' + COOKIE_NAME_PREFIX + '%02d="%s"; %sPath=' + COOKIE_PATH + '; HttpOnly'
-COOKIE_FMT_SECURE = COOKIE_FMT + '; Secure'
-COOKIE_DATE_FMT = '%a, %d-%b-%Y %H:%M:%S GMT'
-COOKIE_OVERHEAD = len(COOKIE_FMT % (0, '', '')) + len('expires=Xxx, xx XXX XXXX XX:XX:XX GMT; ') + 150  # 150=safety margin (e.g., in case browser uses 4000 instead of 4096)
-MAX_DATA_PER_COOKIE = MAX_COOKIE_LEN - COOKIE_OVERHEAD
+
+COOKIE_FMT = None
+COOKIE_FMT_SECURE = None
+COOKIE_DATE_FMT = None
+COOKIE_OVERHEAD = None
+MAX_DATA_PER_COOKIE = None
+
+def Config(prefix):
+    global COOKIE_NAME_PREFIX
+    COOKIE_NAME_PREFIX = prefix
+    
+    global COOKIE_FMT
+    global COOKIE_FMT_SECURE
+    global COOKIE_DATE_FMT
+    global COOKIE_OVERHEAD
+    global MAX_DATA_PER_COOKIE
+    
+    # Set-Cookie 的内容格式
+    COOKIE_FMT = ' ' + COOKIE_NAME_PREFIX + '%02d="%s"; %sPath=' + COOKIE_PATH + '; HttpOnly'
+    COOKIE_FMT_SECURE = COOKIE_FMT + '; Secure'
+    COOKIE_DATE_FMT = '%a, %d-%b-%Y %H:%M:%S GMT'
+    # Set-Cookie 的内容预留的长度
+    COOKIE_OVERHEAD = len(COOKIE_FMT % (0, '', '')) + len('expires=Xxx, xx XXX XXXX XX:XX:XX GMT; ') + 150  # 150=safety margin (e.g., in case browser uses 4000 instead of 4096)
+    # Set-Cookie 的内容实际可用长度
+    MAX_DATA_PER_COOKIE = MAX_COOKIE_LEN - COOKIE_OVERHEAD
 
 _tls = threading.local()
-#SADeclarativeModel = declarative_base()
 
 def get_current_session():
     """Returns the session associated with the current request."""
@@ -51,28 +67,10 @@ def set_current_session(session):
     """Sets the session associated with the current request."""
     _tls.current_session = session
 
-def is_bottle_sessions_key(k):
+def is_mole_sessions_key(k):
     return k.startswith(COOKIE_NAME_PREFIX)
 
-#class SessionModel(SADeclarativeModel):
-#    """Contains session data.  sid is the session ID and pdump contains a
-#    pickled dictionary which maps session variables to their values."""
-#    __tablename__ = 'tbl_bottle_session'
-#
-#    id = Column(INT(unsigned=True), nullable=False, primary_key=True)
-#    ts = Column(INT,nullable=False,index=True)
-#    sid = Column(VARCHAR(255),nullable=False,index=True)
-#    pdump = Column(BLOB)
-#
-#    def __init__(self,timestamp,sid,pdump):
-#        self.ts = timestamp
-#        self.sid = sid
-#        self.pdump = pdump
-#
-#    def __repr__(self):
-#        return '<SessionModel id{0} timestamp:{1} sid:{2}>'.format(self.id,self.ts,self.sid)
-#from peewee import *
-#database = MySQLDatabase('zkeco_db', **{'passwd': 'root', 'user': 'root'})
+
 Model = object
 database = None
 
@@ -102,18 +100,16 @@ class Session(object):
         self.sid = None
         self.cookie_keys = []
         self.cookie_data = None
-        self.data = {}
+        self.data = {}  # 实际的数据
         self.dirty = False  # has the session been changed?
 
-        #python os.environ doesn't work in python 2.7.3 
-        #Get the reference instantiation time
+        #python os.environ doesn't work in python 2.7.3
         self.environ = environ if environ is not None else os.environ.copy()
 
-        #SQLAlchemy Session
-        self.sa_session_class = None#sa_session_class  @add
-
-        #python-memcached client
-        self.mc_client = None#mc_client    @add
+#        #SQLAlchemy Session
+#        self.sa_session_class = None
+#        #memcached client
+#        self.mc_client = None
 
         self.lifetime = lifetime
         self.no_datastore = no_datastore
@@ -128,24 +124,22 @@ class Session(object):
 
     @staticmethod
     def __compute_hmac(base_key, sid, text):
-        """Computes the signature for text given base_key and sid."""
+        u"""签名 Computes the signature for text given base_key and sid."""
         key = base_key + sid
         return b64encode(hmac.new(key, text, hashlib.sha256).digest())
 
     def __read_cookie(self):
         """Reads the HTTP Cookie and loads the sid and data from it (if any)."""
+        print 'session: __read_cookie'
         try:
-            #check if we could get any piece of cookie at all.
-            #Cookie string, sometimes, is complete nil
             if self.environ.get('HTTP_COOKIE') is None:
-                return #no cookies string what-so-ever
+                return #no cookies
 
-            # check the cookie to see if a session has been started
             #cookie = SimpleCookie(os.environ['HTTP_COOKIE'])
             cookie = SimpleCookie(self.environ.get('HTTP_COOKIE'))
-            self.cookie_keys = filter(is_bottle_sessions_key, cookie.keys())
+            self.cookie_keys = filter(is_mole_sessions_key, cookie.keys())
             if not self.cookie_keys:
-                return  # no session yet
+                return  # no session
 
             self.cookie_keys.sort()
             data = ''.join(cookie[k].value for k in self.cookie_keys)
@@ -155,37 +149,39 @@ class Session(object):
             actual_sig = Session.__compute_hmac(self.base_key, sid, pdump)
             if sig == actual_sig:
                 self.__set_sid(sid, False)
-                # check for expiration and terminate the session if it has expired
                 if self.get_expiration() != 0 and time.time() > self.get_expiration():
                     return self.terminate()
 
                 if pdump:
                     self.data = self.__decode_data(pdump)
                 else:
-                    self.data = None  # data is in memcache/db: load it on-demand
+                    self.data = None
             else:
                 logging.warn('cookie with invalid sig received from %s: %s' % (os.environ.get('REMOTE_ADDR'), b64pdump))
         except (CookieError, KeyError, IndexError, TypeError):
-            # there is no cookie (i.e., no session) or the cookie is invalid
+            import traceback;traceback.print_exc()
+            logging.error("session error:", exc_info=True)
             self.terminate(False)
 
-    def make_cookie_headers(self):
-        """Returns a list of cookie headers to send (if any)."""
-        # expire all cookies if the session has ended
+    def make_cookie_headers(self): 
+        """Returns a list of cookie headers to send"""
         if not self.sid:
+            logging.info('session: have no sid, so expore it')
             return [EXPIRE_COOKIE_FMT % k for k in self.cookie_keys]
 
         if self.cookie_data is None:
-            return []  # no cookie headers need to be sent
+            logging.info('no cookie headers need to be sent')
+            return []
 
-        # build the cookie header(s): includes sig, sid, and cookie_data
         if self.is_ssl_only():
             m = MAX_DATA_PER_COOKIE - 8
             fmt = COOKIE_FMT_SECURE
         else:
             m = MAX_DATA_PER_COOKIE
             fmt = COOKIE_FMT
+        # 签名
         sig = Session.__compute_hmac(self.base_key, self.sid, self.cookie_data)
+        # cookies value分批
         cv = sig + self.sid + b64encode(self.cookie_data)
         num_cookies = 1 + (len(cv) - 1) / m
         if self.get_expiration() > 0:
@@ -219,18 +215,26 @@ class Session(object):
         """Fetch the session data if it hasn't been retrieved it yet."""
         self._accessed = True
         if self.data is None and self.sid:
+            # 去存储中加载数据
             self.__retrieve_data()
 
     def get_expiration(self):
-        """Returns the timestamp at which this session will expire."""
+        """根据sid获取session的过期时间戳 Returns the timestamp at which this session will expire."""
         try:
             return int(self.sid[:-33])
         except:
+            import traceback;traceback.print_exc()
+            logging.error("session error:", exc_info=True)
             return 0
+        
+    def flush_expire(self):
+        expire_dt = datetime.datetime.now() + self.lifetime
+        expire_ts = int(time.mktime((expire_dt).timetuple()))
+        return expire_ts
 
-    def __make_sid(self, expire_ts=None, ssl_only=False):
+    def __make_sid(self, expire_ts=None, ssl_only=False): 
         """Returns a new session ID."""
-        # make a random ID (random.randrange() is 10x faster but less secure?)
+        print 'session: __make_sid'
         if expire_ts is None:
             expire_dt = datetime.datetime.now() + self.lifetime
             expire_ts = int(time.mktime((expire_dt).timetuple()))
@@ -244,15 +248,12 @@ class Session(object):
 
     @staticmethod
     def __encode_data(d):
-        """Returns a "pickled+" encoding of d.  d values of type db.Model are
-        protobuf encoded before pickling to minimize CPU usage & data size."""
-        # separate protobufs so we'll know how to decode (they are just strings)
+        """Returns a "pickled+" encoding of d. """
         eP = {}  # for models encoded as protobufs
         eO = {}  # for everything else
         for k, v in d.iteritems():
             if isinstance(v, SessionModel):
-                #eP[k] = db.model_to_protobuf(v)
-                eP[k] = v
+                eP[k] = db.model_to_protobuf(v)
             else:
                 eO[k] = v
         return pickle.dumps((eP, eO), 2)
@@ -262,15 +263,16 @@ class Session(object):
         """Returns a data dictionary after decoding it from "pickled+" form."""
         try:
             eP, eO = pickle.loads(pdump)
-            for k, v in eP.iteritems():
+            #for k, v in eP.iteritems():
                 #eO[k] = db.model_from_protobuf(v)
-                eO[k] = v
         except Exception, e:
+            import traceback;traceback.print_exc()
+            logging.error("session error:", exc_info=True)
             logging.warn("failed to decode session data: %s" % e)
             eO = {}
         return eO
 
-    def regenerate_id(self, expiration_ts=None):
+    def regenerate_id(self, expiration_ts=None): 
         """Assigns the session a new session ID (data carries over).  This
         should be called whenever a user authenticates to prevent session
         fixation attacks.
@@ -278,6 +280,7 @@ class Session(object):
         ``expiration_ts`` - The UNIX timestamp the session will expire at. If
         omitted, the session expiration time will not be changed.
         """
+        print 'session: regenerate_id'
         if self.sid or expiration_ts is not None:
             self.ensure_data_loaded()  # ensure we have the data before we delete it
             if expiration_ts is None:
@@ -300,12 +303,14 @@ class Session(object):
         ``ssl_only`` - Whether to specify the "Secure" attribute on the cookie
         so that the client will ONLY transfer the cookie over a secure channel.
         """
+        print 'session: start (Starts a new session)'
         self.dirty = True
         self.data = {}
         self.__set_sid(self.__make_sid(expiration_ts, ssl_only), True)
 
     def terminate(self, clear_data=True):
-        """Deletes the session and its data, and expires the user's cookie."""
+        """清空所有对象,cookie_data关键 Deletes the session and its data, and expires the user's cookie."""
+        print 'session: terminate clear_data',clear_data
         if clear_data:
             self.__clear_data()
         self.sid = None
@@ -317,96 +322,74 @@ class Session(object):
             self.cookie_data = None
 
     def __set_sid(self, sid, make_cookie=True):
-        """Sets the session ID, deleting the old session if one existed.  The
-        session's data will remain intact (only the session ID changes)."""
+        """Sets the session ID, deleting the old session if one existed.  The session's data will remain intact (only the session ID changes)."""
         if self.sid:
             self.__clear_data()
         self.sid = sid
-        #With SQLAlchemy, sid is unique enough for identification. so we do not need db_key
-        #self.db_key = db.Key.from_path(SessionModel.kind(), sid, namespace='')
 
-        # set the cookie if requested
         if make_cookie:
-            self.cookie_data = ''  # trigger the cookie to be sent
+            self.cookie_data = ''
 
     def __clear_data(self):
-        """Deletes this session from memcache and the datastore."""
+        """Deletes this session from cache and the datastore."""
         if self.sid:
-            try:
-                self.mc_client.delete(self.sid) # not really needed; it'll go away on its own
-                sa_session_instance = self.sa_session_class()
-                """Recycle SessionModel due to limited index issue. set sid to recycle tag,
-                and erase pdump"""
-                session_model_instance = \
-                    sa_session_instance\
-                        .query(SessionModel)\
-                        .filter(SessionModel.sid == self.sid)\
-                        .first()
-
-                if session_model_instance:
-                    session_model_instance.ts = 0
-                    session_model_instance.sid = SM_RECYCLE_TAG
-                    session_model_instance.pdump = None
-                    sa_session_instance.commit()
-
-            except:
-                pass  # either it wasn't in the db (maybe cookie/memcache-only) or db is down => cron will expire it
+            pass
+#            try:
+#                self.mc_client.delete(self.sid)
+#                sa_session_instance = self.sa_session_class()
+#                session_model_instance = sa_session_instance.query(SessionModel).filter(SessionModel.sid == self.sid).first()
+#                if session_model_instance:
+#                    session_model_instance.ts = 0
+#                    session_model_instance.sid = SM_RECYCLE_TAG
+#                    session_model_instance.pdump = None
+#                    sa_session_instance.commit()
+#            except:
+#                pass
 
     def __retrieve_data(self):
-        """Sets the data associated with this session after retrieving it from
-        memcache or the datastore.  Assumes self.sid is set.  Checks for session
-        expiration after getting the data."""
-        pdump = self.mc_client.get(self.sid)
+        """Sets the data associated with this session after retrieving it from memcache or the datastore.  Assumes self.sid is set.  
+        Checks for session expiration after getting the data."""
+        pdump = None
+        #pdump = self.mc_client.get(self.sid)
         if pdump is None:
             # memcache lost it, go to the datastore
             if self.no_datastore:
-                logging.info("can't find session data in memcache for sid=%s (using memcache only sessions)" % self.sid)
-                self.terminate(False)  # we lost it; just kill the session
+                logging.info("can't find session data in cache for sid=%s, terminate the session" % self.sid)
+                self.terminate(False)
                 return
-
             try:
-                sa_session_instance = self.sa_session_class()
-
-                session_model_instance = \
-                    sa_session_instance\
-                        .query(SessionModel)\
-                        .filter(SessionModel.sid == self.sid)\
-                        .first()
-
                 if session_model_instance:
                     pdump = session_model_instance.pdump
                     session_model_instance.ts = int(time.time())
                     sa_session_instance.commit()
                 else:
-                    logging.error("can't find session data in the datastore for sid=%s" % self.sid)
-                    self.terminate(False)  # we lost it; just kill the session
+                    logging.error("can't find session data in the datastore for sid=%s, terminate the session" % self.sid)
+                    self.terminate(False)
                     return
-
             except Exception, e:
-                logging.warning("unable to retrieve session from datastore for sid=%s (%s)" % (self.sid, e))
+                logging.warning("unable to retrieve session from datastore for sid=%s (%s), terminate the session" % (self.sid, e))
+                self.terminate(False)
 
         self.data = self.__decode_data(pdump)
 
-    def save(self, persist_even_if_using_cookie=False):
-        """Saves the data associated with this session IF any changes have been
-        made (specifically, if any mutator methods like __setitem__ or the like
-        is called).
+    def save(self, persist_even_if_using_cookie=False): 
+        u"""Saves the data associated with this session IF any changes have been made (specifically, if any mutator methods like __setitem__ or the like is called).
 
-        If the data is small enough it will be sent back to the user in a cookie
-        instead of using memcache and the datastore.  If `persist_even_if_using_cookie`
-        evaluates to True, memcache and the datastore will also be used.  If the
-        no_datastore option is set, then the datastore will never be used.
+        If the data is small enough it will be sent back to the user in a cookie instead of using memcache and the datastore.  
+        If `persist_even_if_using_cookie` evaluates to True, memcache and the datastore will also be used.  
+        If the no_datastore option is set, then the datastore will never be used.
 
-        Normally this method does not need to be called directly - a session is
-        automatically saved at the end of the request if any changes were made.
+        Normally this method does not need to be called directly - a session is automatically saved at the end of the request if any changes were made.
+        设置cookie_data值
         """
+        print 'session: save sid %s dirty %s'%(self.sid, self.dirty)
         if not self.sid:
-            return  # no session is active
+            return
         if not self.dirty:
-            return  # nothing has changed
-
+            return
+        print 'session: save to do!'
         dirty = self.dirty
-        self.dirty = False  # saving, so it won't be dirty anymore
+        self.dirty = False
 
         # do the pickling ourselves b/c we need it for the datastore anyway
         pdump = self.__encode_data(self.data)
@@ -419,52 +402,27 @@ class Session(object):
         elif self.cookie_keys:
             # latest data will only be in the backend, so expire data cookies we set
             self.cookie_data = ''
-
-        self.mc_client.set(key=self.sid, val=pdump, time=self.get_expiration()) # may fail if memcache is down
+        
+        # here to do cache save
+        #self.mc_client.set(key=self.sid, val=pdump, time=self.get_expiration()) # may fail if memcache is down
 
         # persist the session to the datastore
         if dirty is Session.DIRTY_BUT_DONT_PERSIST_TO_DB or self.no_datastore:
             return
+        # here to do datastore
+#        if session_model_instance:
+#            session_model_instance.ts = int(time.time())
+#            session_model_instance.sid = self.sid
+#            session_model_instance.pdump = pdump
+#        else:
+#            #if there is none, create one
+#            sa_session_instance.add(SessionModel(timestamp=int(time.time()),sid=self.sid,pdump=pdump))
 
-        try:
-            sa_session_instance = self.sa_session_class()
-
-            """Try finding a SessionModel instance with the identical sid"""
-            session_model_instance = \
-                sa_session_instance\
-                    .query(SessionModel)\
-                    .filter(SessionModel.sid == self.sid)\
-                    .first()
-
-            if session_model_instance is not None:
-                session_model_instance.ts = int(time.time())
-                session_model_instance.pdump = pdump
-                sa_session_instance.commit()
-                return
-
-            """Try pulling a SessionModel instance to recycle pool"""
-            session_model_instance = \
-                sa_session_instance\
-                    .query(SessionModel)\
-                    .filter(SessionModel.sid == SM_RECYCLE_TAG)\
-                    .first()
-
-            if session_model_instance:
-                session_model_instance.ts = int(time.time())
-                session_model_instance.sid = self.sid
-                session_model_instance.pdump = pdump
-            else:
-                #if there is none, create one
-                sa_session_instance.add(SessionModel(timestamp=int(time.time()),sid=self.sid,pdump=pdump))
-            
-            sa_session_instance.commit()
-
-        except Exception, e:
-            logging.warning("unable to persist session to datastore for sid=%s (%s)" % (self.sid, e))
 
     # Users may interact with the session through a dictionary-like interface.
     def clear(self):
         """Removes all data from the session (but does not terminate it)."""
+        print 'session: clear'
         if self.sid:
             self.data = {}
             self.dirty = True
@@ -563,7 +521,7 @@ class SessionMiddleware(object):
     memcache/datastore latency which is critical for small sessions.  Larger
     sessions are kept in memcache+datastore instead.  Defaults to 10KB.
     """
-    def __init__(self, app, cookie_key, lifetime=DEFAULT_LIFETIME, no_datastore=False, cookie_only_threshold=DEFAULT_COOKIE_ONLY_THRESH):
+    def __init__(self, app, cookie_key, lifetime=DEFAULT_LIFETIME, no_datastore=True, cookie_only_threshold=DEFAULT_COOKIE_ONLY_THRESH, cookie_name_prefix= COOKIE_NAME_PREFIX, flush_expire=False):
         self.app = app
 #        self.sa_session_class = sa_session_class
 #        self.mc_client = mc_client
@@ -571,52 +529,28 @@ class SessionMiddleware(object):
         self.no_datastore = no_datastore
         self.cookie_only_thresh = cookie_only_threshold
         self.cookie_key = cookie_key
+        self.flush_expire = flush_expire
         if not self.cookie_key:
             raise ValueError("cookie_key MUST be specified")
         if len(self.cookie_key) < 32:
             raise ValueError("RFC2104 recommends you use at least a 32 character key.  Try os.urandom(64) to make a key.")
+        self.cookie_name_prefix = cookie_name_prefix
+        Config(self.cookie_name_prefix)
 
     def __call__(self, environ, start_response):
         # initialize a session for the current user
         _tls.current_session = Session(environ=environ, lifetime=self.lifetime, no_datastore=self.no_datastore, cookie_only_threshold=self.cookie_only_thresh, cookie_key=self.cookie_key)
         # create a hook for us to insert a cookie into the response headers
-        def bottle_session_start_response(status, headers, exc_info=None):
-            _tls.current_session.save()  # store the session if it was changed
+        def mole_session_start_response(status, headers, exc_info=None):
+            if self.flush_expire:
+                _tls.current_session.regenerate_id(_tls.current_session.flush_expire())
+            _tls.current_session.save()
             for ch in _tls.current_session.make_cookie_headers():
                 headers.append(('Set-Cookie', ch))
             return start_response(status, headers, exc_info)
 
-        # let the app do its thing
-        return self.app(environ, bottle_session_start_response)
+        return self.app(environ, mole_session_start_response)
 
-
-
-def delete_expired_sessions(sa_session_class,session_lifetime=DEFAULT_LIFETIME):
-    """Deletes expired sessions from the datastore.
-    Returns True if all recycled sessions are less than 500
-    """
-    def timedelta_to_second(td):
-        return (td.seconds + td.days * 86400)
-
-    sa_session_instance = sa_session_class()
-    expire_thresh = int(time.time()) - timedelta_to_second(session_lifetime)
-
-    print "now {} | expire_thresh {}".format(int(time.time()),expire_thresh)
-
-    session_models =\
-        sa_session_instance\
-            .query(SessionModel)\
-            .filter(SessionModel.ts < expire_thresh)\
-            .filter(SessionModel.sid != SM_RECYCLE_TAG)\
-            .all()
-
-    for sm in session_models:
-        sm.ts = 0
-        sm.sid = SM_RECYCLE_TAG
-        sm.pdump = None
-    logging.info('bottle-sessions: recycled %d expired sessions from the datastore' % len(session_models))
-    sa_session_instance.commit()
-    return len(session_models) < 500
 
 def authenticator(login_url = '/login'):
     '''Create an authenticator decorator.
@@ -633,8 +567,10 @@ def authenticator(login_url = '/login'):
                 try:
                     session = get_current_session()
                     username = session["username"]
-                except (KeyError, TypeError):
-                    redirect(login_url)
+                except (KeyError, TypeError, AttributeError):
+                    next = request.path
+                    _url = '%s?next=%s'%(login_url, next)
+                    redirect(_url)
                 return handler(*a, **ka)
             return check_auth
         return decorator

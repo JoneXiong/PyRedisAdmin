@@ -73,11 +73,10 @@ class Router(object):
                 self.rules.remove(rule)
 
     def build(self, _name, *anon, **args):
-        from urllib import urlencode
-        print '*anon, **args',anon,args
         ''' Return a string that matches a named route. Use keyword arguments
             to fill out named wildcards. Remaining arguments are appended as a
             query string. Raises RouteBuildError or KeyError.'''
+        from urllib import urlencode
         if _name not in self.named:
             raise RouteBuildError("No route with that name.", _name)
         rule, pairs = self.named[_name]
@@ -87,7 +86,6 @@ class Router(object):
             names = token[1::3]
             if len(parts) > len(names): names.append(None)
             pairs = zip(parts, names)
-            print 'build build_info...',pairs
             self.named[_name] = (rule, pairs)
         try:
             anon = list(anon)   # * 参数的处理
@@ -101,7 +99,6 @@ class Router(object):
             raise RouteBuildError(*e.args)
         
         if args: url += ['?', urlencode(args)]
-        print 'build url_list...',url
         return ''.join(url)
 
     def match(self, environ):

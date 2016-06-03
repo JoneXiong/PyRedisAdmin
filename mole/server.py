@@ -161,6 +161,13 @@ class GeventServer(ServerAdapter):
         wsgi.WSGIServer((self.host, self.port), handler).serve_forever()
 
 
+class GeventWebSocketServer(ServerAdapter):
+    def run(self, handler):
+        from gevent import pywsgi
+        from geventwebsocket.handler import WebSocketHandler
+        pywsgi.WSGIServer((self.host, self.port), handler, handler_class=WebSocketHandler).serve_forever()
+
+
 class GunicornServer(ServerAdapter):
     """ Untested. """
     def run(self, handler):
@@ -212,6 +219,7 @@ server_names = {
     'gunicorn': GunicornServer,
     'eventlet': EventletServer,
     'gevent': GeventServer,
+    'geventws': GeventWebSocketServer,
     'rocket': RocketServer,
     'bjoern' : BjoernServer,
     'uvweb' : UVWebServer,
