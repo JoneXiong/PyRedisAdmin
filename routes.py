@@ -5,16 +5,22 @@ from mole.template import template, Jinja2Template
 from mole import request
 from mole import response
 from mole.mole import json_dumps
+from mole import redirect
+from mole.sessions import get_current_session, authenticator
 
 from config import  media_prefix
 import config
 import i18n
+
+
+auth_required = authenticator(login_url='/auth/login')
 
 @route('/%s/:file#.*#'%media_prefix)
 def media(file):
     return static_file(file, root='./media')
 
 @route('/db_tree')
+@auth_required()
 def db_tree():
     from over_view import get_all_trees
     import config
@@ -52,6 +58,7 @@ def db_tree():
 
 
 @route('/db_view')
+@auth_required()
 def db_view():
     try:
         cur_server_index = int(request.GET.get('s', 'server0').replace('server',''))
@@ -63,21 +70,25 @@ def db_view():
     return template("db_view",media_prefix=media_prefix, cur_server_index=cur_server_index, cur_db_index=cur_db_index, keyword=key)
 
 @route('/server_tree')
+@auth_required()
 def server_tree():
     from over_view import get_db_trees
     all_trees = get_db_trees()
     return template("server_tree",all_trees=json_dumps(all_trees),media_prefix=media_prefix)
 
 @route('/')
+@auth_required()
 def server_view():
     return template("main",media_prefix=media_prefix)
 
 @route('/overview')
+@auth_required()
 def overview():
     from over_view import get_redis_info
     return template('overview', redis_info=get_redis_info(), media_prefix=media_prefix)
 
 @route('/view')
+@auth_required()
 def view():
     from data_view import general_html,title_html
     fullkey = request.GET.get('key', '')
@@ -96,6 +107,7 @@ def view():
         return '  This key does not exist.'
     
 @route('/edit')
+@auth_required()
 def edit():
     from data_change import edit_value
     key = request.GET.get('key', None)
@@ -108,6 +120,7 @@ def edit():
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/add')
+@auth_required()
 def add():
     from data_change import add_value
     key = request.GET.get('key', None)
@@ -134,6 +147,7 @@ def get_cl():
     
 
 @route('/delete')
+@auth_required()
 def delete():
     from data_change import delete_key, delete_value
     key = request.GET.get('key', '')
@@ -149,6 +163,7 @@ def delete():
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/ttl')
+@auth_required()
 def ttl():
     from data_change import change_ttl
     cl,cur_server_index,cur_db_index = get_cl()
@@ -159,6 +174,7 @@ def ttl():
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
 @route('/rename')
+@auth_required()
 def rename():
     from data_change import rename_key
     cl,cur_server_index,cur_db_index = get_cl()
@@ -176,10 +192,33 @@ def iimport():
     return 'Still in developme. You can see it in next version.'
 
 @route('/save')
+@auth_required()
 def save():
     cl,cur_server_index,cur_db_index = get_cl()
     cl.bgsave()
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+
+
+@route('/auth/login', method=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.POST.get("username", '')
+        password = request.POST.get("password", '')
+        if password == config.admin_pwd and username == config.admin_user:
+            session = get_current_session()
+            session['username'] = username
+            return {'code': 0, 'msg': 'OK'}
+        else:
+            return {'code': -1, 'msg': '用户名或密码错误'}
+    else:
+        return template('auth/login.html', config=config)
+
+
+@route('/auth/logout')
+def logout():
+    session = get_current_session()
+    del session['username']
+    return redirect(request.params.get('next') or '/')
 
 
 if __name__  == "__main__":
