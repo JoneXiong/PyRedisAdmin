@@ -211,7 +211,7 @@ def login():
         else:
             return {'code': -1, 'msg': '用户名或密码错误'}
     else:
-        return template('auth/login.html', config=config)
+        return template('auth/login.html', config=config, media_prefix=media_prefix)
 
 
 @route('/auth/logout')
