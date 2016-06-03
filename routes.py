@@ -222,4 +222,7 @@ def logout():
 
 
 if __name__  == "__main__":
-    run(host=config.host, port=config.port, reloader=config.debug)
+    from mole.mole import default_app
+    from mole.sessions import SessionMiddleware
+    app = SessionMiddleware(app=default_app(), cookie_key="457rxK3w54tkKiqkfqwfoiQS@kaJSFOo8h",no_datastore=True)
+    run(app=app, host=config.host, port=config.port, reloader=config.debug)
