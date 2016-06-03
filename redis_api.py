@@ -64,6 +64,7 @@ def get_all_keys_dict(client=None):
 
 def get_all_keys_tree(client=None,key='*', cursor=0):
     client = client or get_client()
+    key = key or '*'
     if key=='*':
         next_cursor,m_all = client.scan(cursor=cursor, match=key, count=config.scan_batch)
     else:
