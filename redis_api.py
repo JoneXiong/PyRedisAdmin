@@ -72,7 +72,11 @@ def get_all_keys_tree(client=None,key='*', cursor=0):
         next_cursor,m_all = 0, client.keys(key)
     m_all.sort()
     me = {'root':{"pId": "0" ,"id": "root","name":"","count":0, "open":True}}
+    counter = 0
     for key in m_all:
+        counter +=1
+        if counter>config.scan_batch:
+            break
         if len(key)>100:
             continue
         key_levels = key.split(config.base['seperator'])
