@@ -49,7 +49,7 @@
 			else 
 				if (type == 'hash') {
 					name = window.prompt('Input the name', '');
-					if (name=="" || name==null) {
+					if (!(name=="" || name==null)) {
 						value = window.prompt('Input the value', '');
 						if (value) {
 							window.location.href = url + '&name=' + name + '&value=' + value;
