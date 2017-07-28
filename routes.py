@@ -124,7 +124,11 @@ def edit():
     score = request.GET.get('score', None)
     cl, cur_server_index, cur_db_index = get_cl()
     edit_value(key, value, new, score, type, cl)
-    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+    if new:
+        return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+    else:
+        return '<script type=text/javascript> alert("error: missing new value");'\
+               'window.location.href=document.referrer</script>'
 
 
 @route('/add')

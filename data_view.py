@@ -4,6 +4,10 @@
 '''
 
 from config import media_prefix
+try:
+    from html import escape  # python 3.x
+except ImportError:
+    from cgi import escape  # python 2.x
 
 
 def title_html(fullkey, sid, db):
@@ -70,7 +74,7 @@ def string_html(fullkey, sid, db, client):
           <a class="btn" href="/edit?s=%(sid)s&db=%(db)s&amp;type=string&amp;key=%(fullkey)s" onclick="edit(this.href,'%(value)s');return false;" title="Edit"><i class="icon-edit"></i></a>
         </div></td></tr>
     </table>
-    ''' % ({'value': m_value, 'sid': sid, 'db': db, 'fullkey': fullkey, 'media_prefix': media_prefix})
+    ''' % ({'value': escape(m_value), 'sid': sid, 'db': db, 'fullkey': fullkey, 'media_prefix': media_prefix})
     return out
 
 
