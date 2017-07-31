@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from mole import route, run, static_file, error,get, post, put, delete, Mole   # 均来自Mole类
+from mole import route, run, static_file, error, get, post, put, delete, Mole  # 均来自Mole类
 from mole.template import template, Jinja2Template
 from mole import request
 from mole import response
@@ -8,16 +8,17 @@ from mole.mole import json_dumps
 from mole import redirect
 from mole.sessions import get_current_session, authenticator
 
-from config import  media_prefix
+from config import media_prefix
 import config
 import i18n
 
-
 auth_required = authenticator(login_url='/auth/login')
 
-@route('/%s/:file#.*#'%media_prefix)
+
+@route('/%s/:file#.*#' % media_prefix)
 def media(file):
     return static_file(file, root='./media')
+
 
 @route('/db_tree')
 @auth_required()
@@ -34,7 +35,7 @@ def db_tree():
         cur_scan_cursor = 0
     key = request.GET.get('k', '*')
     all_trees = get_all_trees(cur_server_index, key, db=cur_db_index, cursor=cur_scan_cursor)
-    if type(all_trees)==list:
+    if type(all_trees) == list:
         next_scan_cursor, count = all_trees.pop()
         all_trees_json = json_dumps(all_trees)
         error_msg = ''
@@ -43,16 +44,16 @@ def db_tree():
         all_trees_json = []
         error_msg = all_trees
     m_config = config.base
-    return template('db_tree', 
-                    all_trees=all_trees_json, 
-                    config=m_config, 
+    return template('db_tree',
+                    all_trees=all_trees_json,
+                    config=m_config,
                     cur_server_index=cur_server_index,
                     cur_db_index=cur_db_index,
-                    cur_scan_cursor=next_scan_cursor, 
+                    cur_scan_cursor=next_scan_cursor,
                     pre_scan_cursor=cur_scan_cursor,
-                    cur_search_key= (key!='*' and key or ''), 
-                    count = count,
-                    error_msg = error_msg,
+                    cur_search_key=(key != '*' and key or ''),
+                    count=count,
+                    error_msg=error_msg,
                     media_prefix=media_prefix
                     )
 
@@ -61,25 +62,29 @@ def db_tree():
 @auth_required()
 def db_view():
     try:
-        cur_server_index = int(request.GET.get('s', 'server0').replace('server',''))
-        cur_db_index = int(request.GET.get('db', 'db0').replace('db',''))
+        cur_server_index = int(request.GET.get('s', 'server0').replace('server', ''))
+        cur_db_index = int(request.GET.get('db', 'db0').replace('db', ''))
     except:
         cur_server_index = 0
         cur_db_index = 0
     key = request.GET.get('k', '*')
-    return template("db_view",media_prefix=media_prefix, cur_server_index=cur_server_index, cur_db_index=cur_db_index, keyword=key)
+    return template("db_view", media_prefix=media_prefix, cur_server_index=cur_server_index, cur_db_index=cur_db_index,
+                    keyword=key)
+
 
 @route('/server_tree')
 @auth_required()
 def server_tree():
     from over_view import get_db_trees
     all_trees = get_db_trees()
-    return template("server_tree",all_trees=json_dumps(all_trees),media_prefix=media_prefix)
+    return template("server_tree", all_trees=json_dumps(all_trees), media_prefix=media_prefix)
+
 
 @route('/')
 @auth_required()
 def server_view():
-    return template("main",media_prefix=media_prefix)
+    return template("main", media_prefix=media_prefix)
+
 
 @route('/overview')
 @auth_required()
@@ -87,14 +92,15 @@ def overview():
     from over_view import get_redis_info
     return template('overview', redis_info=get_redis_info(), media_prefix=media_prefix)
 
+
 @route('/view')
 @auth_required()
 def view():
-    from data_view import general_html,title_html
+    from data_view import general_html, title_html
     fullkey = request.GET.get('key', '')
-    refmodel = request.GET.get('refmodel',None)
-    
-    cl,cur_server_index,cur_db_index = get_cl()
+    refmodel = request.GET.get('refmodel', None)
+
+    cl, cur_server_index, cur_db_index = get_cl()
     if cl.exists(fullkey):
         title_html = title_html(fullkey, cur_server_index, cur_db_index)
         general_html = general_html(fullkey, cur_server_index, cur_db_index, cl)
@@ -105,7 +111,8 @@ def view():
             return template('view', out_html=out_html, media_prefix=media_prefix)
     else:
         return '  This key does not exist.'
-    
+
+
 @route('/edit')
 @auth_required()
 def edit():
@@ -115,9 +122,14 @@ def edit():
     type = request.GET.get('type', None)
     new = request.GET.get('new', None)
     score = request.GET.get('score', None)
-    cl,cur_server_index,cur_db_index = get_cl()
-    edit_value(key,value,new,score,type,cl)
-    return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+    cl, cur_server_index, cur_db_index = get_cl()
+    edit_value(key, value, new, score, type, cl)
+    if new:
+        return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+    else:
+        return '<script type=text/javascript> alert("error: missing new value");'\
+               'window.location.href=document.referrer</script>'
+
 
 @route('/add')
 @auth_required()
@@ -128,9 +140,10 @@ def add():
     type = request.GET.get('type', None)
     name = request.GET.get('name', None)
     score = request.GET.get('score', None)
-    cl,cur_server_index,cur_db_index = get_cl()
-    add_value(key,value,name,score,type,cl)
+    cl, cur_server_index, cur_db_index = get_cl()
+    add_value(key, value, name, score, type, cl)
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+
 
 def get_cl():
     from config import base
@@ -142,9 +155,10 @@ def get_cl():
         cur_server_index = 0
         cur_db_index = 0
     server = base['servers'][cur_server_index]
-    cl = get_client(host=server['host'], port=server['port'],db=cur_db_index, password=server.has_key('password') and server['password'] or None)
-    return cl,cur_server_index,cur_db_index
-    
+    cl = get_client(host=server['host'], port=server['port'], db=cur_db_index,
+                    password=server.has_key('password') and server['password'] or None)
+    return cl, cur_server_index, cur_db_index
+
 
 @route('/delete')
 @auth_required()
@@ -154,47 +168,52 @@ def delete():
     value = request.GET.get('value', None)
     type = request.GET.get('type', None)
     cur_scan_cursor = request.GET.get('cursor', None)
-    cl,cur_server_index,cur_db_index = get_cl()
+    cl, cur_server_index, cur_db_index = get_cl()
     if value:
-        delete_value(key,value,type,cl)
+        delete_value(key, value, type, cl)
     else:
-        delete_key(key,cl, cursor=cur_scan_cursor)
+        delete_key(key, cl, cursor=cur_scan_cursor)
         return '<script type=text/javascript> alert("ok")</script>'
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+
 
 @route('/ttl')
 @auth_required()
 def ttl():
     from data_change import change_ttl
-    cl,cur_server_index,cur_db_index = get_cl()
+    cl, cur_server_index, cur_db_index = get_cl()
     key = request.GET.get('key', None)
     new = request.GET.get('new', None)
     if new:
-        change_ttl(key,int(new),cl)
+        change_ttl(key, int(new), cl)
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
+
 
 @route('/rename')
 @auth_required()
 def rename():
     from data_change import rename_key
-    cl,cur_server_index,cur_db_index = get_cl()
+    cl, cur_server_index, cur_db_index = get_cl()
     key = request.GET.get('key', None)
     new = request.GET.get('new', None)
-    rename_key(key,new,cl)
+    rename_key(key, new, cl)
     return '<script type=text/javascript> alert("ok");parent.location.reload();</script>'
+
 
 @route('/export')
 def export():
     return 'Still in developme. You can see it in next version.'
 
+
 @route('/import')
 def iimport():
     return 'Still in developme. You can see it in next version.'
 
+
 @route('/save')
 @auth_required()
 def save():
-    cl,cur_server_index,cur_db_index = get_cl()
+    cl, cur_server_index, cur_db_index = get_cl()
     cl.bgsave()
     return '<script type=text/javascript> alert("ok");window.location.href=document.referrer</script>'
 
@@ -221,8 +240,9 @@ def logout():
     return redirect(request.params.get('next') or '/')
 
 
-if __name__  == "__main__":
+if __name__ == "__main__":
     from mole.mole import default_app
     from mole.sessions import SessionMiddleware
-    app = SessionMiddleware(app=default_app(), cookie_key="457rxK3w54tkKiqkfqwfoiQS@kaJSFOo8h",no_datastore=True)
+
+    app = SessionMiddleware(app=default_app(), cookie_key="457rxK3w54tkKiqkfqwfoiQS@kaJSFOo8h", no_datastore=True)
     run(app=app, host=config.host, port=config.port, reloader=config.debug)

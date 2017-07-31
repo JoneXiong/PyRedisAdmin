@@ -25,11 +25,11 @@ Next work
 
 Screenshots
 ========
-![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/info.jpg)
+![info](/media/images/info.jpg)
 
-![info](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/desc.png)
+![info](/media/images/desc.png)
 
-![data](https://github.com/JoneXiong/PyRedisAdmin/raw/master/media/images/data.jpg)
+![data](/media/images/data.jpg)
 
 1. 模糊搜索
 2. 查看下一批
